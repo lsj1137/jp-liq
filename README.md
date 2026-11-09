@@ -27,10 +27,13 @@ npm start              # http://localhost:3000
 | 환경변수 | 서버의 `~/projects/jp-liq/.env` (`PORT`, `HOST`, `GEMINI_API_KEY`) |
 | nginx | `/etc/nginx/sites-available/jp-liq.conf` |
 
+코드: https://github.com/lsj1137/jp-liq (서버 폴더도 이 저장소를 받아온 것)
+
 코드나 가격 데이터를 바꾼 뒤 업데이트:
 
 ```bash
-./deploy.sh
+git commit -am "..." && git push
+./deploy.sh        # 서버에서 git pull + pm2 restart
 ```
 
 API 키를 바꿀 때는 서버에서 `.env` 수정 후 `pm2 restart jp-liq --update-env`.

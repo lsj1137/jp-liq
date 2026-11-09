@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
-# 코드·데이터를 서버(~/projects/jp-liq)에 올리고 pm2를 재시작한다.
-# 서버의 .env(API 키, 포트)는 건드리지 않는다.
+# GitHub main 브랜치를 서버(~/projects/jp-liq)에 받아오고 pm2를 재시작한다.
+# 먼저 커밋하고 git push 한 다음 실행. 서버의 .env(API 키, 포트)는 git에 없어서 그대로 유지된다.
 # 사용: ./deploy.sh
 set -euo pipefail
-cd "$(dirname "$0")"
 
-HOST=myserver-deployjun
-DIR=projects/jp-liq
+if [ -n "$(git status --porcelain)" ] || [ "$(git rev-parse HEAD)" != "$(git rev-parse @{u})" ]; then
+  echo "커밋 안 된 변경이나 push 안 된 커밋이 있어요. 커밋하고 git push 한 뒤 다시 실행하세요." >&2
+  exit 1
+fi
 
-tar czf - --exclude=.env --exclude=node_modules --exclude='_*' . \
-  | ssh "$HOST" "cd $DIR && tar xzf - && pm2 restart jp-liq --update-env >/dev/null && pm2 save >/dev/null"
-ssh "$HOST" "curl -s -o /dev/null -w 'jp-liq: HTTP %{http_code}\n' http://127.0.0.1:3240/"
+ssh myserver-deployjun 'cd ~/projects/jp-liq \
+  && git pull --ff-only -q \
+  && pm2 restart jp-liq --update-env >/dev/null \
+  && sleep 1 \
+  && echo "배포: $(git log --oneline -1)" \
+  && curl -s -o /dev/null -w "jp-liq: HTTP %{http_code}\n" http://127.0.0.1:3240/'
