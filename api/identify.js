@@ -11,35 +11,61 @@ ${CATALOG}`;
 
 class ProviderError extends Error {}
 
+// fn을 실행하고, delay 안에 답이 없거나 실패하면 같은 요청을 한 번 더 보내 먼저 성공한 결과를 쓴다.
+// 둘 다 실패하면 마지막 에러. 끝나면 남은 요청은 취소한다.
+function hedge(fn, delay = 6000, timeout = 25000) {
+  const ctrls = [];
+  return new Promise((resolve, reject) => {
+    let pending = 0;
+    const finish = (v) => {
+      clearTimeout(timer);
+      ctrls.forEach((c) => c.abort());
+      resolve(v);
+    };
+    const launch = () => {
+      const c = new AbortController();
+      ctrls.push(c);
+      pending++;
+      fn(AbortSignal.any([c.signal, AbortSignal.timeout(timeout)])).then(finish, (e) => {
+        if (--pending > 0) return;
+        if (ctrls.length < 2) launch();
+        else reject(e);
+      });
+    };
+    const timer = setTimeout(() => ctrls.length < 2 && launch(), delay);
+    launch();
+  });
+}
+
 // 각 provider는 (mime, base64) → 모델이 출력한 텍스트를 돌려준다.
 const PROVIDERS = {
   gemini: {
     key: 'GEMINI_API_KEY',
     model: process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite',
     async call(key, mime, data) {
-      const body = (thinking) => ({
+      const thinking = process.env.GEMINI_THINKING ?? 'minimal';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
+      const body = JSON.stringify({
         contents: [{ parts: [{ inline_data: { mime_type: mime, data } }, { text: PROMPT }] }],
         generationConfig: {
           responseMimeType: 'application/json',
           maxOutputTokens: 200,
+          // 라벨 읽기에 긴 추론은 필요 없다
           ...(thinking && { thinkingConfig: { thinkingLevel: thinking } }),
         },
       });
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
-      const post = (b) =>
-        fetch(url, {
+      // 같은 요청이 보통 2초인데 가끔 20~40초 걸려서(실측), 늦으면 하나 더 보내 먼저 온 답을 쓴다
+      return hedge(async (signal) => {
+        const r = await fetch(url, {
           method: 'POST',
           headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
-          body: JSON.stringify(b),
-          signal: AbortSignal.timeout(20000),
+          body,
+          signal,
         });
-      // 라벨 읽기에 긴 추론은 필요 없다. 모델이 이 thinking 값을 거부하면 기본값으로 재시도.
-      const thinking = process.env.GEMINI_THINKING ?? 'minimal';
-      let r = await post(body(thinking));
-      if (r.status === 400 && thinking) r = await post(body(null));
-      if (!r.ok) throw new ProviderError(`인식 서버 오류 (Gemini ${r.status})`);
-      const d = await r.json();
-      return d.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? '').join('') ?? '';
+        if (!r.ok) throw new ProviderError(`인식 서버 오류 (Gemini ${r.status})`);
+        const d = await r.json();
+        return d.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? '').join('') ?? '';
+      });
     },
   },
   claude: {
