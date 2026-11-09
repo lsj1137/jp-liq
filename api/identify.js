@@ -2,8 +2,8 @@ import whiskies from '../public/whiskies.json' with { type: 'json' };
 import { send, readJson } from '../lib/http.js';
 
 const CATALOG = whiskies.map((w) => `${w.id}: ${w.en}`).join('\n');
-const PROMPT = `사진 속 술병(위스키, 사케, 소주, 우메슈 등)의 라벨을 읽고, 아래 목록에서 정확히 같은 제품의 id를 고르세요.
-숙성 연수(12년, NV 등)와 캐스크/에디션까지 일치해야 합니다. 일치하는 게 없으면 id는 null.
+const PROMPT = `사진 속 술병(위스키, 사케, 소주, 우메슈, 와인·샴페인 등)의 라벨을 읽고, 아래 목록에서 정확히 같은 제품의 id를 고르세요.
+숙성 연수(12년, NV 등)와 캐스크/에디션까지 일치해야 합니다. 와인은 빈티지 연도는 달라도 같은 제품이면 됩니다. 일치하는 게 없으면 id는 null.
 JSON 한 줄만 출력하세요: {"id": "<id 또는 null>", "name": "<라벨에 적힌 제품명(영어 또는 일본어)>"}
 
 목록:

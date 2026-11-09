@@ -1,7 +1,7 @@
 // 지하 매장처럼 인터넷이 약한 곳에서도 목록·가격·병 사진이 열리게 캐시한다.
 // 사진 인식(/api/identify, POST)만 인터넷이 필요하다.
 // 병 사진을 같은 파일 이름으로 바꿨다면 CACHE 버전을 올려야 새 사진이 보인다.
-const CACHE = 'jp-liq-v2';
+const CACHE = 'jp-liq-v3';
 const SHELL = ['/', '/app.js', '/style.css', '/whiskies.json', '/manifest.webmanifest', '/icon-192.png'];
 
 self.addEventListener('install', (e) => {

@@ -6,6 +6,7 @@ const CATS = {
   sake: ['sake'],
   shochu: ['shochu', 'awamori'],
   liqueur: ['liqueur', 'gin'],
+  wine: ['wine'],
 };
 const CONF = { high: '높음', medium: '보통', low: '낮음' };
 const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
@@ -301,7 +302,7 @@ $('#cats').addEventListener('click', (e) => {
 });
 
 // '전체' 탭도 위 분류 탭과 같은 순서로 보여준다
-const ORDER = ['japan', 'sake', 'shochu', 'awamori', 'liqueur', 'gin', 'scotch', 'american', 'irish', 'other'];
+const ORDER = ['japan', 'sake', 'shochu', 'awamori', 'liqueur', 'gin', 'wine', 'scotch', 'american', 'irish', 'other'];
 state.list = (await (await fetch('whiskies.json')).json())
   .sort((a, b) => ORDER.indexOf(a.cat) - ORDER.indexOf(b.cat))
   .map((w) => {
@@ -320,14 +321,15 @@ loadRate();
 const DUTY_FREE = { ml: 2000, usd: 400 };
 
 // 여행자 주류 세율 (간이세율 미적용). 관세 t, 주세 a, 교육세 e(주세 대비), 부가세 10%.
-// 총세율 = (1+t)(1+a(1+e))×1.1 − 1 → 위스키·진·리큐르 약 156%, 소주 약 177%, 사케 약 68%.
+// 총세율 = (1+t)(1+a(1+e))×1.1 − 1 → 위스키·진·리큐르 약 156%, 소주 약 177%, 사케·와인 약 68%.
 // 일본산 RCEP 협정세율은 공항 적용 여부가 불확실해 일반 세율을 쓴다.
 const TAX = {
   spirits: { t: 0.2, a: 0.72, e: 0.3 },
   shochu: { t: 0.3, a: 0.72, e: 0.3 },
-  sake: { t: 0.15, a: 0.3, e: 0.1 },
+  // 사케(청주)와 와인(과실주)은 관세 15%·주세 30%·교육세 10%로 같다
+  brewed: { t: 0.15, a: 0.3, e: 0.1 },
 };
-const taxKind = (cat) => (cat === 'sake' ? 'sake' : cat === 'shochu' || cat === 'awamori' ? 'shochu' : 'spirits');
+const taxKind = (cat) => (cat === 'sake' || cat === 'wine' ? 'brewed' : cat === 'shochu' || cat === 'awamori' ? 'shochu' : 'spirits');
 
 function bottleTax(c) {
   const { t, a, e } = TAX[taxKind(c.w.cat)];
@@ -420,7 +422,7 @@ function renderCartDialog() {
         )
         .join('')}
     </ul>
-    <p class="note">가격은 실제 결제액(일본 면세 적용 후) 기준이고 직접 고칠 수 있어요. 세금은 위스키·진·리큐르 약 156%, 소주 약 177%, 사케 약 68%로 계산한 추정치예요(세관은 주간 고시 환율을 써서 조금 다를 수 있어요). 영수증은 꼭 챙기세요.</p>
+    <p class="note">가격은 실제 결제액(일본 면세 적용 후) 기준이고 직접 고칠 수 있어요. 세금은 위스키·진·리큐르 약 156%, 소주 약 177%, 사케·와인 약 68%로 계산한 추정치예요(세관은 주간 고시 환율을 써서 조금 다를 수 있어요). 영수증은 꼭 챙기세요.</p>
     <div class="actions">
       <button type="button" data-clear>비우기</button>
       <button type="button" class="primary" data-close>닫기</button>
