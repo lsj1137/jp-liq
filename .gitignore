@@ -1,0 +1,6 @@
+node_modules/
+.env
+.vercel/
+
+# 테스트용 스크린샷
+_*.png

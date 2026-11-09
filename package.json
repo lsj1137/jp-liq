@@ -1,0 +1,13 @@
+{
+  "name": "jp-liq",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "일본 술 한국/일본 평균가 즉시 비교",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

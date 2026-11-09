@@ -1,0 +1,249 @@
+[
+{
+"id": "jw-blue",
+"ml": 750,
+"kr": [
+259000,
+265000,
+349000
+],
+"jp": [
+19800,
+23000,
+30800
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/25",
+"https://dailyshot.co/m/reviews/211297"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000695129/",
+"https://www.likaman-online.com/c/westernliquor/whisky/scotch/blended/johnniewalker/513926",
+"https://biccamera.rakuten.co.jp/item/5000267114279"
+],
+"confidence": "high",
+"note": "KR 코스트코 258,900·트레이더스 259,800·데일리샷 259,000원(2026.10). 최고 349,000원은 누적 최고가. JP 라쿠텐 최저 ¥19,800, 리카만 ¥20,780, 라쿠텐 빅카메라 ¥21,780, 요도바시·카쿠야스 ¥30,800(검색결과 기준). 리커샵이 가전양판점보다 훨씬 저렴"
+},
+{
+"id": "ballantines-17",
+"ml": 700,
+"kr": [
+119000,
+125000,
+130000
+],
+"jp": [
+6400,
+7500,
+11100
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/59"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000695600/"
+],
+"confidence": "high",
+"note": "KR 2026 코스트코 118,900·이마트 129,800원. JP 가격.com ¥6,380~11,132, 리카만 ¥6,980/8,800. 일본은 매장별 편차 큼"
+},
+{
+"id": "chivas-12",
+"ml": 700,
+"kr": [
+35000,
+48000,
+60000
+],
+"jp": [
+2500,
+3000,
+3600
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/71"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000695014/"
+],
+"confidence": "medium",
+"note": "KR 트레이더스 34,940~39,980(2025), 이마트 53,800(2026.7), 가나주류 48,000원. JP 가격.com ¥2,530~3,615, 리카만 ¥2,860"
+},
+{
+"id": "monkey-shoulder",
+"ml": 700,
+"kr": [
+40000,
+50000,
+65000
+],
+"jp": [
+3100,
+4300,
+5000
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/238"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0001241935/"
+],
+"confidence": "high",
+"note": "KR 2026.10 트레이더스 49,980·코스트코 49,790원. JP 가격.com ¥3,135~4,950, 리카만 ¥4,280"
+},
+{
+"id": "glenmorangie-12",
+"ml": 700,
+"kr": [
+77000,
+80000,
+90000
+],
+"jp": [
+4300,
+4600,
+6500
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/7367",
+"https://dailyshot.co/m/search/result?q=글렌모렌지 오리지널"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0001643143/"
+],
+"confidence": "medium",
+"note": "오리지널이 12년으로 바뀌어 '오리지널 12년' 기준. KR 코스트코 79,900·이마트 89,800원(2026). JP 가격.com ¥4,280~5,478. 구 10년은 KR 69,000원, JP ¥5,280"
+},
+{
+"id": "glendronach-12",
+"ml": 700,
+"kr": [
+69000,
+83000,
+120000
+],
+"jp": [
+5900,
+6200,
+7100
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/1922"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000694821/"
+],
+"confidence": "high",
+"note": "KR 2026 트레이더스 79,800~82,800, 데일리샷 89,000원(편의점 약 12만원). JP 가격.com ¥5,862~6,468, 리카만 ¥7,128"
+},
+{
+"id": "aberlour-abunadh",
+"ml": 700,
+"kr": [
+149000,
+165000,
+228000
+],
+"jp": [
+10600,
+11000,
+15000
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/90"
+],
+"jp_sources": [
+"https://whisky-no-hi.com/page/951/price",
+"https://www.shinanoya-tokyo.jp/view/item/000000021794"
+],
+"confidence": "low",
+"note": "배치마다 가격이 다름. KR 트레이더스 149,400원(2025.4), 데일리샷 150,000~200,000원, 키햐 227,500원. JP 대체로 ¥10,780~11,230, 시나노야 ¥13,200"
+},
+{
+"id": "bowmore-12",
+"ml": 700,
+"kr": [
+71000,
+82000,
+103000
+],
+"jp": [
+4700,
+5600,
+6500
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/1537"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000695922/"
+],
+"confidence": "medium",
+"note": "KR 이마트 84,800원(2026.5). JP 가격.com ¥5,624~6,480, 리카만 정규품 ¥5,390"
+},
+{
+"id": "highland-park-12",
+"ml": 700,
+"kr": [
+66000,
+85000,
+98000
+],
+"jp": [
+4600,
+6000,
+7700
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/176"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000695545/"
+],
+"confidence": "medium",
+"note": "KR 이마트 89,800원(2026.5), 데일리샷 66,000~74,900원. JP 가격.com ¥4,640~7,700, 리카만 ¥6,050"
+},
+{
+"id": "dalmore-12",
+"ml": 700,
+"kr": [
+100000,
+100000,
+136000
+],
+"jp": [
+8800,
+10000,
+11400
+],
+"kr_sources": [
+"https://soolhanjan.com/alcohol/911"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0001558639/"
+],
+"confidence": "medium",
+"note": "KR 트레이더스·이마트 99,800원(2026)으로 안정적. JP 가격.com ¥8,800~10,800, 리카만 ¥10,780. 일본이 한국보다 크게 싸지 않음"
+},
+{
+"id": "kilchoman-machir-bay",
+"ml": 700,
+"kr": [
+106000,
+110000,
+120000
+],
+"jp": [
+5500,
+6400,
+8700
+],
+"kr_sources": [
+"https://dailyshot.co/m/search/result?q=킬호만"
+],
+"jp_sources": [
+"https://kakaku.com/item/K0000694691/"
+],
+"confidence": "medium",
+"note": "KR 데일리샷 109,900원(마트 가격표는 2024년 자료). JP 가격.com ¥5,518~7,480, 리카만 ¥8,690"
+}
+]
