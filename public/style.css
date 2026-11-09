@@ -10,6 +10,9 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
+/* 버튼을 빠르게 두 번 눌러도 화면이 확대되지 않게 */
+html { touch-action: manipulation; }
+button, label, summary { -webkit-tap-highlight-color: transparent; }
 p { margin: 0; }
 body {
   margin: 0;
@@ -303,6 +306,7 @@ body:has(#cartbar:not([hidden])) footer { padding-bottom: calc(96px + env(safe-a
 #cart .content { padding: 22px 20px 18px; }
 #cart h2 { margin: 0 0 14px; font-size: 19px; }
 #cart h2 small { font-size: 14px; font-weight: 500; color: var(--sub); }
+#cart .items li:not(.taxed) em { display: none; }
 #cart .items em { margin-right: 6px; padding: 1px 5px; border-radius: 4px; background: #ffeceb; color: var(--red); font-size: 11px; font-style: normal; font-weight: 600; }
 .meter { margin-bottom: 10px; }
 .meter p { display: flex; justify-content: space-between; font-size: 14px; color: var(--sub); }
@@ -316,9 +320,28 @@ body:has(#cartbar:not([hidden])) footer { padding-bottom: calc(96px + env(safe-a
 #cart .items .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #cart .items small { color: var(--faint); }
 #cart .items label { display: flex; align-items: center; gap: 3px; color: var(--sub); }
-#cart .items input { width: 84px; height: 34px; padding: 0 8px; border: 0; border-radius: 8px; background: var(--field); font: inherit; font-size: 15px; text-align: right; }
+#cart .items input { width: 92px; height: 36px; padding: 0 8px; border: 0; border-radius: 8px; background: var(--field); font: inherit; font-size: 16px; text-align: right; outline: none; }
+#cart .items input:focus { box-shadow: inset 0 0 0 2px var(--blue); background: #fff; }
+#cart h2:focus { outline: none; }
 #cart .del { width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: var(--faint); font-size: 14px; cursor: pointer; }
 #cart .note { margin-top: 8px; font-size: 12px; color: var(--faint); }
 #cart .actions { display: flex; gap: 8px; margin-top: 16px; }
 #cart .actions button { flex: 1; height: 46px; border: 0; border-radius: 12px; background: var(--field); color: var(--text); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
 #cart .actions .primary { background: var(--text); color: #fff; }
+
+.cartctl { margin-top: 10px; }
+.cartctl:has([data-dec]) { display: flex; align-items: center; height: 42px; border-radius: 10px; background: #e8f3ff; color: var(--blue); }
+.cartctl [data-dec],
+.cartctl:has([data-dec]) [data-add] {
+  width: 52px;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 22px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.cartctl:has([data-dec]) span { flex: 1; text-align: center; font-size: 14px; font-weight: 600; }
+.cartctl .add { margin-top: 0; }

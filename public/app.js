@@ -101,7 +101,7 @@ function row(w) {
         <label class="tax"><input type="checkbox" data-tax checked /> 면세</label>
       </div>
       <output data-out></output>
-      <button type="button" class="add" data-add>${inCart(w.id) ? `장바구니에 ${inCart(w.id)}병 담김 · 하나 더 담기` : '면세 장바구니에 담기'}</button>
+      <div class="cartctl">${cartCtl(w.id)}</div>
       ${w.note ? `<details class="info"><summary>가격 출처 · 신뢰도 ${CONF[w.conf] ?? '-'} · ${w.updated}</summary>
         <p>${w.note}</p>
         <p>${w.src.map((u) => `<a href="${u}" target="_blank" rel="noopener">${new URL(u).hostname.replace(/^www\./, '')}</a>`).join(', ')}</p>
@@ -280,8 +280,13 @@ $('#list').addEventListener('click', (e) => {
     return;
   }
   if (!el || !e.target.closest('.head')) return;
-  state.open = state.open === el.dataset.id ? null : el.dataset.id;
+  // 위쪽에 펼쳐져 있던 제품이 접히면서 화면이 튀지 않게, 누른 제품을 같은 위치에 둔다
+  const id = el.dataset.id;
+  const before = el.getBoundingClientRect().top;
+  state.open = state.open === id ? null : id;
   render();
+  const after = $(`.row[data-id="${id}"]`)?.getBoundingClientRect().top;
+  if (after !== undefined) window.scrollBy(0, after - before);
 });
 $('#list').addEventListener('input', (e) => {
   if (e.target.matches('[data-calc], [data-tax]')) updateCalc(e.target.closest('.row'));
@@ -377,17 +382,31 @@ function cartTotals() {
   return { items, count: items.length, ml, yen: yenSum, usd: yenSum * state.usd };
 }
 
+// 제품 안의 장바구니 버튼: 안 담겼으면 '담기', 담겼으면 − n병 +
+function cartCtl(id) {
+  const n = inCart(id);
+  return n
+    ? `<button type="button" data-dec aria-label="하나 빼기">−</button><span>장바구니에 ${n}병</span><button type="button" data-add aria-label="하나 더 담기">+</button>`
+    : `<button type="button" class="add" data-add>면세 장바구니에 담기</button>`;
+}
+
+function refreshCartCtl(id) {
+  const el = $(`.row[data-id="${id}"] .cartctl`);
+  if (el) el.innerHTML = cartCtl(id);
+}
+
 function renderCart() {
   const t = cartTotals();
   const bar = $('#cartbar');
   bar.hidden = !t.count;
-  if (!t.count) return;
-  const over = t.ml > DUTY_FREE.ml || t.usd > DUTY_FREE.usd;
-  bar.querySelector('.sum').textContent = `${t.count}병 · ${(t.ml / 1000).toFixed(2)}L · ${usd(t.usd)}`;
-  const flag = bar.querySelector('.flag');
-  flag.textContent = over ? '면세 한도 초과' : '면세 범위 안';
-  flag.classList.toggle('over', over);
-  if ($('#cart').open) renderCartDialog();
+  if (t.count) {
+    const over = t.ml > DUTY_FREE.ml || t.usd > DUTY_FREE.usd;
+    bar.querySelector('.sum').textContent = `${t.count}병 · ${(t.ml / 1000).toFixed(2)}L · ${usd(t.usd)}`;
+    const flag = bar.querySelector('.flag');
+    flag.textContent = over ? '면세 한도 초과' : '면세 범위 안';
+    flag.classList.toggle('over', over);
+  }
+  if ($('#cart').open) renderCartSummary();
 }
 
 function meter(label, value, limit, fmt) {
@@ -398,11 +417,12 @@ function meter(label, value, limit, fmt) {
   </div>`;
 }
 
-function renderCartDialog() {
+// 합계·세금 부분만 다시 그린다. 가격 입력칸은 건드리지 않아서 입력 중에도 포커스가 유지된다.
+function renderCartSummary() {
   const t = cartTotals();
   const tax = estimateTax(t);
-  $('#cart .content').innerHTML = `
-    <h2>면세 장바구니 <small>${t.count}병</small></h2>
+  $('#cart h2 small').textContent = `${t.count}병`;
+  $('#cart .summary').innerHTML = `
     ${meter('용량', t.ml, DUTY_FREE.ml, (n) => `${(n / 1000).toFixed(2)}L`)}
     ${meter('금액', t.usd, DUTY_FREE.usd, usd)}
     <p class="verdict">${
@@ -410,13 +430,24 @@ function renderCartDialog() {
         ? `면세 한도를 넘어서 <b class="cheap">${tax.taxed.length}병</b>에 세금이 붙어요.<br>
            예상 세금 약 <b class="cheap">${won(tax.total)}</b> · 자진신고하면 약 <b>${won(tax.declared)}</b>`
         : '한국 입국 시 술 면세 범위 안이에요.'
-    }</p>
+    }</p>`;
+  $('#cart .items')
+    .querySelectorAll('li')
+    .forEach((li, i) => li.classList.toggle('taxed', !!tax?.taxed.includes(i)));
+}
+
+function renderCartDialog() {
+  const t = cartTotals();
+  // 제목에 autofocus를 줘서, 열 때 가격 입력칸이 선택돼 키보드가 뜨는 걸 막는다
+  $('#cart .content').innerHTML = `
+    <h2 tabindex="-1" autofocus>면세 장바구니 <small></small></h2>
+    <div class="summary"></div>
     <ul class="items">
       ${t.items
         .map(
           (c, i) => `<li>
-        <span class="nm">${tax?.taxed.includes(i) ? '<em>과세</em>' : ''}${c.w.ko} <small>${c.w.ml}ml</small></span>
-        <label>¥<input type="number" inputmode="numeric" value="${Math.round(c.paid)}" data-idx="${i}" /></label>
+        <span class="nm"><em>과세</em>${c.w.ko} <small>${c.w.ml}ml</small></span>
+        <label>¥<input type="number" inputmode="numeric" enterkeyhint="done" value="${Math.round(c.paid)}" data-idx="${i}" /></label>
         <button type="button" class="del" data-del="${i}" aria-label="빼기">✕</button>
       </li>`,
         )
@@ -427,16 +458,19 @@ function renderCartDialog() {
       <button type="button" data-clear>비우기</button>
       <button type="button" class="primary" data-close>닫기</button>
     </div>`;
+  renderCartSummary();
 }
 
 $('#list').addEventListener('click', (e) => {
-  const btn = e.target.closest('[data-add]');
-  if (!btn) return;
-  const el = btn.closest('.row');
+  const add = e.target.closest('[data-add]');
+  const dec = e.target.closest('[data-dec]');
+  if (!add && !dec) return;
+  const el = e.target.closest('.row');
   const w = byId(el.dataset.id);
-  state.cart.push({ id: w.id, paid: Math.round(paidYen(el, w)) });
+  if (add) state.cart.push({ id: w.id, paid: Math.round(paidYen(el, w)) });
+  else state.cart.splice(state.cart.findLastIndex((c) => c.id === w.id), 1);
   saveCart();
-  btn.textContent = `장바구니에 ${inCart(w.id)}병 담김 · 하나 더 담기`;
+  refreshCartCtl(w.id);
 });
 $('#cartbar').addEventListener('click', () => {
   renderCartDialog();
@@ -446,22 +480,29 @@ $('#cart').addEventListener('click', (e) => {
   if (e.target === $('#cart') || e.target.closest('[data-close]')) return $('#cart').close();
   const del = e.target.closest('[data-del]');
   if (del) {
-    state.cart.splice(Number(del.dataset.del), 1);
+    const [removed] = state.cart.splice(Number(del.dataset.del), 1);
     saveCart();
-    if (!state.cart.length) $('#cart').close();
-    render();
+    refreshCartCtl(removed.id);
+    if (state.cart.length) renderCartDialog();
+    else $('#cart').close();
   } else if (e.target.closest('[data-clear]')) {
+    const ids = new Set(state.cart.map((c) => c.id));
     state.cart = [];
     saveCart();
+    ids.forEach(refreshCartCtl);
     $('#cart').close();
-    render();
   }
 });
-$('#cart').addEventListener('change', (e) => {
+// 가격을 고치는 동안 합계에 바로 반영하되, 목록은 다시 그리지 않는다
+$('#cart').addEventListener('input', (e) => {
   const idx = e.target.dataset.idx;
   if (idx === undefined) return;
   state.cart[Number(idx)].paid = Math.max(0, Number(e.target.value) || 0);
   saveCart();
+});
+// 키보드의 완료(엔터)를 누르면 키보드를 닫는다
+$('#cart').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.dataset.idx !== undefined) e.target.blur();
 });
 renderCart();
 
