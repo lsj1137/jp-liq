@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#191f28"/>
+  <!-- 술병 -->
+  <path d="M226 92h60v70c0 18 14 30 30 44 20 18 34 38 34 70v156c0 22-14 36-36 36H198c-22 0-36-14-36-36V276c0-32 14-52 34-70 16-14 30-26 30-44z" fill="#fff"/>
+  <!-- 라벨 -->
+  <rect x="182" y="300" width="148" height="92" rx="10" fill="#e5323c"/>
+  <text x="256" y="368" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="64" font-weight="700" fill="#fff">¥</text>
+</svg>

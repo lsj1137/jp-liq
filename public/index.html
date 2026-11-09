@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="일본술 가격" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />
     <title>일본 술 가격 비교</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -17,7 +21,7 @@
       <form class="search" onsubmit="return false">
         <svg class="glass" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
         <input id="q" type="search" placeholder="이름으로 검색 (닷사이, 야마자키, ㅁㅇ)" autocomplete="off" enterkeyhint="search" />
-<button type="button" class="cam" id="cam" title="라벨 찍어서 찾기">
+        <button type="button" class="cam" id="cam" title="라벨 찍어서 찾기">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" /><circle cx="12" cy="13.3" r="3.3" /></svg>
         </button>
         <input id="photo" type="file" accept="image/*" capture="environment" hidden />
@@ -53,8 +57,16 @@
     <footer>
       <p>가격은 2026년 11월 웹 조사 기준 평균가입니다(한국: 트레이더스, 이마트, 코스트코, 데일리샷 / 일본: 가격.com, 리커마운틴, 돈키호테). 제품을 누르면 가격 범위와 출처를 볼 수 있습니다. 구하기 어려운 술(야마자키, 하쿠슈, 히비키, 쥬요다이, 모리이조 등)은 정가가 아닌 실제 시세 기준입니다.</p>
       <p>일본 면세: 같은 날 한 매장에서 ¥5,000 이상 사면 여권 제시로 소비세 10% 면제.<br />
-        한국 입국 면세: 술 2병, 합계 2L 이하, 총 $400 이하. 넘으면 세금이 붙습니다.</p>
+        한국 입국 면세: 술은 병 수와 관계없이 합계 2L 이하, 총 $400 이하(2025년 3월부터). 넘으면 넘긴 병 전체 가격에 세금이 붙습니다. 만 19세 미만은 면세 없음.</p>
     </footer>
+
+    <button type="button" id="cartbar" hidden>
+      <span class="ttl">면세 장바구니</span>
+      <span class="sum"></span>
+      <span class="flag"></span>
+    </button>
+
+    <dialog id="cart"><div class="content"></div></dialog>
 
     <dialog id="camera">
       <video playsinline muted></video>

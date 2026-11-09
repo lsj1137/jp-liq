@@ -19,6 +19,7 @@ const TYPES = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.webp': 'image/webp',
+  '.webmanifest': 'application/manifest+json',
 };
 
 http

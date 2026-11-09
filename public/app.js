@@ -13,6 +13,9 @@ const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
 const state = {
   list: [],
   rate: Number(localStorage.getItem('krwPerJpy')) || 8.6,
+  usd: Number(localStorage.getItem('usdPerJpy')) || 0.0064,
+  // 면세 장바구니: [{ id, paid }] paid는 실제 결제한(할) 엔화
+  cart: JSON.parse(localStorage.getItem('cart') || '[]'),
   rateNote: '저장된 환율',
   open: null,
   cat: 'all',
@@ -97,6 +100,7 @@ function row(w) {
         <label class="tax"><input type="checkbox" data-tax checked /> 면세</label>
       </div>
       <output data-out></output>
+      <button type="button" class="add" data-add>${inCart(w.id) ? `장바구니에 ${inCart(w.id)}병 담김 · 하나 더 담기` : '면세 장바구니에 담기'}</button>
       ${w.note ? `<details class="info"><summary>가격 출처 · 신뢰도 ${CONF[w.conf] ?? '-'} · ${w.updated}</summary>
         <p>${w.note}</p>
         <p>${w.src.map((u) => `<a href="${u}" target="_blank" rel="noopener">${new URL(u).hostname.replace(/^www\./, '')}</a>`).join(', ')}</p>
@@ -125,12 +129,17 @@ function render() {
   $('#count').textContent = `${items.length}개`;
 }
 
+// 매장 가격을 입력했으면 그 값, 아니면 일본 평균가. 면세에 체크돼 있으면 소비세 10%를 뺀다.
+function paidYen(el, w) {
+  const price = Number(el.querySelector('[data-calc]').value) || w.jp[1];
+  return el.querySelector('[data-tax]').checked ? price / 1.1 : price;
+}
+
 function updateCalc(el) {
   const w = state.list.find((x) => x.id === el.dataset.id);
-  const price = Number(el.querySelector('[data-calc]').value);
   const out = el.querySelector('[data-out]');
-  if (!price) return (out.innerHTML = '');
-  const paid = el.querySelector('[data-tax]').checked ? price / 1.1 : price;
+  if (!Number(el.querySelector('[data-calc]').value)) return (out.innerHTML = '');
+  const paid = paidYen(el, w);
   const krw = paid * state.rate;
   out.innerHTML = `실제 결제 ${yen(paid)} ≈ ${won(krw)}<br>${verdict(w, krw)}`;
 }
@@ -150,13 +159,18 @@ async function loadRate() {
   try {
     const d = await (await fetch('/api/rate')).json();
     state.rate = d.krwPerJpy;
+    state.usd = d.usdPerJpy ?? state.usd;
     state.rateNote = d.live ? `실시간 · ${new Date(d.updated).toLocaleDateString('ko-KR')}` : '기본값';
-    if (d.live) localStorage.setItem('krwPerJpy', d.krwPerJpy);
+    if (d.live) {
+      localStorage.setItem('krwPerJpy', d.krwPerJpy);
+      if (d.usdPerJpy) localStorage.setItem('usdPerJpy', d.usdPerJpy);
+    }
   } catch {
     // 오프라인이면 저장된 환율 사용
   }
   renderRate();
   render();
+  renderCart();
 }
 
 // 업로드 용량과 인식 시간을 줄이려고 긴 변 1024px JPEG로 줄여서 보낸다.
@@ -194,7 +208,7 @@ async function identify(source) {
     }
     render();
   } catch (e) {
-    setStatus(e.message || '사진 인식에 실패했어요.', true);
+    setStatus(navigator.onLine ? e.message || '사진 인식에 실패했어요.' : '인터넷이 연결되지 않아 사진 인식을 할 수 없어요. 이름으로 검색해 주세요.', true);
   } finally {
     cam.classList.remove('busy');
   }
@@ -300,3 +314,154 @@ state.open = 'first';
 renderRate();
 render();
 loadRate();
+
+// ── 면세 장바구니 ───────────────────────────────────────────
+// 한국 입국 시 술 면세 한도 (관세청, 2025.3.21부터 병 수 제한 없음): 합계 2L 이하이고 $400 이하.
+const DUTY_FREE = { ml: 2000, usd: 400 };
+
+// 여행자 주류 세율 (간이세율 미적용). 관세 t, 주세 a, 교육세 e(주세 대비), 부가세 10%.
+// 총세율 = (1+t)(1+a(1+e))×1.1 − 1 → 위스키·진·리큐르 약 156%, 소주 약 177%, 사케 약 68%.
+// 일본산 RCEP 협정세율은 공항 적용 여부가 불확실해 일반 세율을 쓴다.
+const TAX = {
+  spirits: { t: 0.2, a: 0.72, e: 0.3 },
+  shochu: { t: 0.3, a: 0.72, e: 0.3 },
+  sake: { t: 0.15, a: 0.3, e: 0.1 },
+};
+const taxKind = (cat) => (cat === 'sake' ? 'sake' : cat === 'shochu' || cat === 'awamori' ? 'shochu' : 'spirits');
+
+function bottleTax(c) {
+  const { t, a, e } = TAX[taxKind(c.w.cat)];
+  const price = c.paid * state.rate;
+  return { total: price * ((1 + t) * (1 + a * (1 + e)) * 1.1 - 1), duty: price * t };
+}
+
+// 한도를 넘으면 세관은 세금이 가장 적게 나오도록 면세할 병을 고른다. 병 수가 적으니 모든 조합을 본다.
+function estimateTax({ items, ml, usd: usdSum }) {
+  if (ml <= DUTY_FREE.ml && usdSum <= DUTY_FREE.usd) return null;
+  const taxes = items.map(bottleTax);
+  const n = Math.min(items.length, 16);
+  let best = { total: Infinity };
+  for (let mask = 0; mask < 1 << n; mask++) {
+    let m = 0, u = 0, total = 0, duty = 0;
+    const taxed = [];
+    for (let i = 0; i < items.length; i++) {
+      if (i < n && mask & (1 << i)) {
+        m += items[i].w.ml;
+        u += items[i].paid * state.usd;
+      } else {
+        total += taxes[i].total;
+        duty += taxes[i].duty;
+        taxed.push(i);
+      }
+    }
+    if (m <= DUTY_FREE.ml && u <= DUTY_FREE.usd && total < best.total) best = { total, duty, taxed };
+  }
+  return { ...best, declared: best.total - Math.min(best.duty * 0.3, 200000) };
+}
+
+const inCart = (id) => state.cart.filter((c) => c.id === id).length;
+const byId = (id) => state.list.find((w) => w.id === id);
+const usd = (n) => `$${Math.round(n).toLocaleString('en-US')}`;
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(state.cart));
+  renderCart();
+}
+
+function cartTotals() {
+  const items = state.cart.map((c) => ({ ...c, w: byId(c.id) })).filter((c) => c.w);
+  const ml = items.reduce((a, c) => a + c.w.ml, 0);
+  const yenSum = items.reduce((a, c) => a + c.paid, 0);
+  return { items, count: items.length, ml, yen: yenSum, usd: yenSum * state.usd };
+}
+
+function renderCart() {
+  const t = cartTotals();
+  const bar = $('#cartbar');
+  bar.hidden = !t.count;
+  if (!t.count) return;
+  const over = t.ml > DUTY_FREE.ml || t.usd > DUTY_FREE.usd;
+  bar.querySelector('.sum').textContent = `${t.count}병 · ${(t.ml / 1000).toFixed(2)}L · ${usd(t.usd)}`;
+  const flag = bar.querySelector('.flag');
+  flag.textContent = over ? '면세 한도 초과' : '면세 범위 안';
+  flag.classList.toggle('over', over);
+  if ($('#cart').open) renderCartDialog();
+}
+
+function meter(label, value, limit, fmt) {
+  const over = value > limit;
+  return `<div class="meter${over ? ' over' : ''}">
+    <p><span>${label}</span><b>${fmt(value)} / ${fmt(limit)}</b></p>
+    <i style="--w:${Math.min(100, (value / limit) * 100)}%"></i>
+  </div>`;
+}
+
+function renderCartDialog() {
+  const t = cartTotals();
+  const tax = estimateTax(t);
+  $('#cart .content').innerHTML = `
+    <h2>면세 장바구니 <small>${t.count}병</small></h2>
+    ${meter('용량', t.ml, DUTY_FREE.ml, (n) => `${(n / 1000).toFixed(2)}L`)}
+    ${meter('금액', t.usd, DUTY_FREE.usd, usd)}
+    <p class="verdict">${
+      tax
+        ? `면세 한도를 넘어서 <b class="cheap">${tax.taxed.length}병</b>에 세금이 붙어요.<br>
+           예상 세금 약 <b class="cheap">${won(tax.total)}</b> · 자진신고하면 약 <b>${won(tax.declared)}</b>`
+        : '한국 입국 시 술 면세 범위 안이에요.'
+    }</p>
+    <ul class="items">
+      ${t.items
+        .map(
+          (c, i) => `<li>
+        <span class="nm">${tax?.taxed.includes(i) ? '<em>과세</em>' : ''}${c.w.ko} <small>${c.w.ml}ml</small></span>
+        <label>¥<input type="number" inputmode="numeric" value="${Math.round(c.paid)}" data-idx="${i}" /></label>
+        <button type="button" class="del" data-del="${i}" aria-label="빼기">✕</button>
+      </li>`,
+        )
+        .join('')}
+    </ul>
+    <p class="note">가격은 실제 결제액(일본 면세 적용 후) 기준이고 직접 고칠 수 있어요. 세금은 위스키·진·리큐르 약 156%, 소주 약 177%, 사케 약 68%로 계산한 추정치예요(세관은 주간 고시 환율을 써서 조금 다를 수 있어요). 영수증은 꼭 챙기세요.</p>
+    <div class="actions">
+      <button type="button" data-clear>비우기</button>
+      <button type="button" class="primary" data-close>닫기</button>
+    </div>`;
+}
+
+$('#list').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-add]');
+  if (!btn) return;
+  const el = btn.closest('.row');
+  const w = byId(el.dataset.id);
+  state.cart.push({ id: w.id, paid: Math.round(paidYen(el, w)) });
+  saveCart();
+  btn.textContent = `장바구니에 ${inCart(w.id)}병 담김 · 하나 더 담기`;
+});
+$('#cartbar').addEventListener('click', () => {
+  renderCartDialog();
+  $('#cart').showModal();
+});
+$('#cart').addEventListener('click', (e) => {
+  if (e.target === $('#cart') || e.target.closest('[data-close]')) return $('#cart').close();
+  const del = e.target.closest('[data-del]');
+  if (del) {
+    state.cart.splice(Number(del.dataset.del), 1);
+    saveCart();
+    if (!state.cart.length) $('#cart').close();
+    render();
+  } else if (e.target.closest('[data-clear]')) {
+    state.cart = [];
+    saveCart();
+    $('#cart').close();
+    render();
+  }
+});
+$('#cart').addEventListener('change', (e) => {
+  const idx = e.target.dataset.idx;
+  if (idx === undefined) return;
+  state.cart[Number(idx)].paid = Math.max(0, Number(e.target.value) || 0);
+  saveCart();
+});
+renderCart();
+
+// 오프라인에서도 열리도록 서비스 워커 등록 (sw.js)
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');

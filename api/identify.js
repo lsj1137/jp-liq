@@ -104,10 +104,39 @@ function pickProvider() {
   return p && process.env[p.key] ? { ...p, apiKey: process.env[p.key] } : null;
 }
 
+// 남이 API를 반복 호출해 Gemini 무료 한도(하루 1,500회)를 다 쓰지 않게 막는다.
+// 인식 한 번에 Gemini를 최대 2번 부르므로(hedge) 전체 하루 한도는 그 절반 아래로 잡는다.
+// 메모리에만 저장해서 서버를 재시작하면 초기화된다.
+const LIMIT = {
+  perMinute: Number(process.env.IDENTIFY_PER_MINUTE) || 6,
+  perDay: Number(process.env.IDENTIFY_PER_DAY) || 60,
+  allPerDay: Number(process.env.IDENTIFY_ALL_PER_DAY) || 600,
+};
+let usage = { day: '', all: 0, byIp: new Map() };
+
+function overLimit(ip) {
+  const day = new Date().toISOString().slice(0, 10);
+  if (usage.day !== day) usage = { day, all: 0, byIp: new Map() };
+  const now = Date.now();
+  const u = usage.byIp.get(ip) ?? { day: 0, recent: [] };
+  u.recent = u.recent.filter((t) => now - t < 60_000);
+  if (usage.all >= LIMIT.allPerDay) return '오늘 사진 인식 사용량이 다 찼어요. 이름으로 검색해 주세요.';
+  if (u.day >= LIMIT.perDay) return '오늘 사진 인식을 너무 많이 썼어요. 이름으로 검색해 주세요.';
+  if (u.recent.length >= LIMIT.perMinute) return '잠시 후 다시 찍어 주세요 (1분에 6번까지).';
+  u.day++;
+  u.recent.push(now);
+  usage.all++;
+  usage.byIp.set(ip, u);
+  return null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { error: 'POST만 지원해요.' });
   const provider = pickProvider();
   if (!provider) return send(res, 503, { error: '사진 인식이 설정되지 않았어요 (API 키 없음). 이름으로 검색해 주세요.' });
+  // nginx가 실제 접속 IP를 X-Real-IP로 넘겨준다. 앱 서버는 127.0.0.1에서만 열려 있어 위조할 수 없다.
+  const limited = overLimit(req.headers['x-real-ip'] ?? req.socket.remoteAddress);
+  if (limited) return send(res, 429, { error: limited });
 
   let body;
   try {
