@@ -86,6 +86,9 @@ const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg
 // 한국 반입 금지·주의 표시 (warn: { level: 'ban' | 'caution', reason })
 const TAG = { ban: '반입금지', caution: '주의' };
 const tag = (it) => (it.warn ? `<span class="tag ${it.warn.level}">${TAG[it.warn.level]}</span>` : '');
+// J픽: 일본 현지 랭킹·어워드에서 인기, K픽: 한국 여행자 쇼핑 리스트에서 인기 (picks: ['j', 'k'])
+const PICKS = { j: 'J픽', k: 'K픽' };
+const picks = (it) => (it.picks ?? []).map((p) => `<span class="tag pick-${p}">${PICKS[p]}</span>`).join('');
 
 function row(it) {
   return `
@@ -93,7 +96,7 @@ function row(it) {
     <div class="head">
       ${pic(it)}
       <div class="body">
-        <p class="name">${tag(it)}<span>${esc(it.ko)}</span></p>
+        <p class="name">${tag(it)}${picks(it)}<span>${esc(it.ko)}</span></p>
         <p class="sub">${esc(it.ja)}</p>
         <p class="pp"><b>${yen(it.price)}</b><span class="krw">${won(it.price * state.rate)}</span><span class="where">${esc(it.where)}</span></p>
       </div>
@@ -171,6 +174,8 @@ const SORTS = {
   priceAsc: (a, b) => a.price - b.price,
   priceDesc: (a, b) => b.price - a.price,
   name: (a, b) => a.ko.localeCompare(b.ko, 'ko'),
+  jpick: (a, b) => !!b.picks?.includes('j') - !!a.picks?.includes('j'),
+  kpick: (a, b) => !!b.picks?.includes('k') - !!a.picks?.includes('k'),
 };
 
 function render() {

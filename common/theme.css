@@ -36,6 +36,23 @@ header { background: var(--washi); }
 h1,
 dialog h2 { font-family: "Gowun Batang", serif; letter-spacing: -0.02em; }
 
+/* 제목 왼쪽 뒤로가기 (메인으로). 홈 화면 앱으로 열면 브라우저 뒤로가기가 없어서 필요 */
+h1 .back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin: -6px 0 -6px -10px;
+  border-radius: 50%;
+  color: inherit;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+h1 .back:active { background: rgba(47, 42, 38, 0.08); }
+h1 .back svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
 /* 입력칸·선택칸·버튼 바탕: 흰색 대신 종이색 */
 .search input:focus,
 .calc input[type="number"]:focus,
