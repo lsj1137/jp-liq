@@ -3,59 +3,207 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#f2f4f6" />
+    <meta name="theme-color" content="#f7f1e7" />
     <meta name="robots" content="noindex" />
-    <title>일본 여행 쇼핑</title>
+    <title>일본여행 가이드북</title>
     <link rel="icon" href="liquor/icon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" />
     <style>
-      :root { --bg: #f2f4f6; --text: #191f28; --sub: #6b7684; --line: #f2f4f6; color-scheme: light; }
+      :root {
+        --washi: #f7f1e7;
+        --paper: #fffdf8;
+        --ink: #2f2a26;
+        --sub: #7a6f66;
+        --sakura: #f1b9c7;
+        --sakura-deep: #d9849a;
+        --shu: #c8432f; /* 도장 주홍 */
+        color-scheme: light;
+      }
       * { box-sizing: border-box; }
+      html { touch-action: manipulation; }
       body {
         margin: 0;
         min-height: 100dvh;
-        background: var(--bg);
-        color: var(--text);
-        font: 15px/1.45 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        overflow-x: hidden;
+        color: var(--ink);
+        font: 15px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
         letter-spacing: -0.01em;
         -webkit-font-smoothing: antialiased;
+        /* 화지(和紙) 느낌: 아주 옅은 섬유 결 */
+        background:
+          url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9 .05' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+          var(--washi);
       }
-      main { max-width: 520px; margin: 0 auto; padding: calc(40px + env(safe-area-inset-top)) 16px 32px; }
-      h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.03em; }
-      .lead { margin: 0 0 24px; color: var(--sub); }
-      ul { list-style: none; margin: 0; padding: 0; background: #fff; border-radius: 16px; overflow: hidden; }
-      li + li a { border-top: 1px solid var(--line); }
-      a { display: flex; align-items: center; gap: 16px; padding: 18px 16px; color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
-      a:active { background: #f9fafb; }
-      img { width: 56px; height: 56px; border-radius: 14px; flex: none; }
-      strong { display: block; font-size: 17px; font-weight: 600; }
-      span { display: block; margin-top: 2px; font-size: 13px; color: var(--sub); }
-      .go { margin-left: auto; color: #b0b8c1; font-size: 20px; }
-      footer { margin-top: 20px; font-size: 12px; color: #8b95a1; }
+
+      main { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: calc(36px + env(safe-area-inset-top)) 20px 40px; }
+
+      /* 머리: 종이학 + 제목 + 도장 */
+      .crane { display: block; width: 116px; height: auto; margin: 0 0 6px -6px; }
+      h1 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-family: "Gowun Batang", serif;
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .hanko {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border: 2px solid var(--shu);
+        border-radius: 6px;
+        color: var(--shu);
+        font-family: "Gowun Batang", serif;
+        font-size: 17px;
+        font-weight: 700;
+        transform: rotate(-6deg);
+        opacity: 0.85;
+      }
+      .lead { margin: 8px 0 28px; color: var(--sub); font-size: 15px; }
+
+      /* 접힌 종이 카드: 오른쪽 위 모서리가 접혀 있다 */
+      .cards { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+      .card {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 20px 18px;
+        color: inherit;
+        text-decoration: none;
+        background: var(--paper);
+        filter: drop-shadow(0 1px 0 rgba(120, 90, 70, 0.12)) drop-shadow(0 8px 12px rgba(120, 90, 70, 0.1));
+        clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 0 100%);
+        -webkit-tap-highlight-color: transparent;
+        transition: transform 0.15s ease;
+      }
+      .card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 26px;
+        height: 26px;
+        background: linear-gradient(225deg, transparent 50%, #f3d3db 50%, #ecc2cd);
+      }
+      .card:active { transform: translateY(1px) scale(0.99); }
+      .card svg { flex: none; width: 58px; height: 58px; }
+      .card strong { display: block; font-family: "Gowun Batang", serif; font-size: 19px; font-weight: 700; }
+      .card span { display: block; margin-top: 3px; font-size: 13px; color: var(--sub); }
+      .card .go { margin-left: auto; color: var(--sakura-deep); font-size: 20px; }
+
+      footer { margin-top: 26px; font-size: 12px; color: var(--sub); line-height: 1.6; }
+
+      /* 오른쪽 아래 벚꽃 가지 */
+      .branch { position: fixed; right: -10px; bottom: -6px; z-index: 0; width: 210px; height: auto; pointer-events: none; opacity: 0.9; }
+
+      /* 흩날리는 벚꽃잎 (움직임 줄이기 설정이면 멈춘 채로) */
+      .petals { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+      .petals svg { position: absolute; top: -40px; width: 16px; height: 16px; fill: var(--sakura); opacity: 0.75; animation: fall linear infinite; }
+      .petals svg:nth-child(1) { left: 8%; width: 14px; animation-duration: 15s; animation-delay: -2s; }
+      .petals svg:nth-child(2) { left: 26%; width: 18px; animation-duration: 19s; animation-delay: -9s; fill: #f6cfd8; }
+      .petals svg:nth-child(3) { left: 47%; width: 12px; animation-duration: 13s; animation-delay: -5s; }
+      .petals svg:nth-child(4) { left: 66%; width: 17px; animation-duration: 17s; animation-delay: -12s; fill: #ebaabb; }
+      .petals svg:nth-child(5) { left: 83%; width: 13px; animation-duration: 14s; animation-delay: -7s; fill: #f6cfd8; }
+      .petals svg:nth-child(6) { left: 93%; width: 16px; animation-duration: 21s; animation-delay: -15s; }
+      @keyframes fall {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        50% { transform: translate(-30px, 55vh) rotate(160deg); }
+        100% { transform: translate(10px, 110vh) rotate(320deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .petals svg { animation: none; top: auto; }
+        .petals svg:nth-child(odd) { top: 12%; }
+        .petals svg:nth-child(even) { top: 70%; }
+      }
     </style>
   </head>
   <body>
+    <div class="petals" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path id="petal" d="M12 4 10 1C4 3 2 10 6 17c2 3 4.5 5 6 5s4-2 6-5c4-7 2-14-4-16z" /></svg>
+      <svg viewBox="0 0 24 24"><use href="#petal" /></svg>
+      <svg viewBox="0 0 24 24"><use href="#petal" /></svg>
+      <svg viewBox="0 0 24 24"><use href="#petal" /></svg>
+      <svg viewBox="0 0 24 24"><use href="#petal" /></svg>
+      <svg viewBox="0 0 24 24"><use href="#petal" /></svg>
+    </div>
+
+    <svg class="branch" viewBox="0 0 210 170" aria-hidden="true">
+      <defs>
+        <g id="blossom">
+          <path id="bp" d="M0-2-2-5C-6-4-7 1-5 5c1 2 3 3 5 3s4-1 5-3c2-4 1-9-3-10z" transform="translate(0 -6)" />
+          <use href="#bp" transform="rotate(72)" />
+          <use href="#bp" transform="rotate(144)" />
+          <use href="#bp" transform="rotate(216)" />
+          <use href="#bp" transform="rotate(288)" />
+          <circle r="2.6" fill="#d9849a" />
+        </g>
+      </defs>
+      <path d="M215 120C170 115 140 100 110 70 95 55 80 48 55 46M140 102c-6-18-4-30 6-44M110 70c-14 4-26 2-38-8" fill="none" stroke="#8a6a5c" stroke-width="3.2" stroke-linecap="round" />
+      <g fill="#f4c5d1"><use href="#blossom" transform="translate(56 44) scale(1.25)" /></g>
+      <g fill="#f1b9c7"><use href="#blossom" transform="translate(146 58) scale(1.1) rotate(20)" /></g>
+      <g fill="#f6d2db"><use href="#blossom" transform="translate(110 70) scale(1.35) rotate(-15)" /></g>
+      <g fill="#efb0c0"><use href="#blossom" transform="translate(74 62) scale(0.9) rotate(40)" /></g>
+      <g fill="#f4c5d1"><use href="#blossom" transform="translate(178 112) scale(1.2) rotate(10)" /></g>
+      <circle cx="96" cy="50" r="3" fill="#e9a3b5" />
+      <circle cx="160" cy="88" r="2.6" fill="#e9a3b5" />
+    </svg>
+
     <main>
-      <h1>일본 여행 쇼핑</h1>
-      <p class="lead">뭘 살지, 얼마면 싼지 한 번에.</p>
-      <ul>
+      <!-- 종이학 -->
+      <svg class="crane" viewBox="0 0 120 80" aria-hidden="true">
+        <polygon points="62,40 96,8 72,42" fill="#f7d6de" />
+        <polygon points="44,42 60,30 80,42 60,52" fill="#ecb3c2" />
+        <polygon points="60,40 30,6 52,41" fill="#e597ab" />
+        <polygon points="44,42 22,18 48,39" fill="#f2c4d0" />
+        <polygon points="22,18 14,23 25,21" fill="#d9849a" />
+        <polygon points="80,42 106,26 76,45" fill="#f2c4d0" />
+        <polyline points="60,30 60,52" fill="none" stroke="#d9849a" stroke-width="0.8" opacity="0.6" />
+      </svg>
+      <h1>일본여행 가이드북 <span class="hanko" aria-hidden="true">旅</span></h1>
+      <p class="lead">뭘 살지, 얼마면 싼지 한 권에 담았어요.</p>
+
+      <ul class="cards">
         <li>
-          <a href="shop/">
-            <img src="shop/icon-192.png" alt="" />
-            <div><strong>쇼핑 필수템</strong><span>의약품·화장품·과자·생활용품, 면세·반입 팁</span></div>
-            <b class="go" aria-hidden="true">›</b>
+          <a class="card" href="shop/">
+            <!-- 종이접기 쇼핑백 -->
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <path d="M22 22v-4a10 10 0 0 1 20 0v4" fill="none" stroke="#c98a9b" stroke-width="2.5" stroke-linecap="round" />
+              <polygon points="12,22 32,22 30,56 10,56" fill="#f2c4d0" />
+              <polygon points="32,22 52,22 54,56 30,56" fill="#e7a5b6" />
+              <polygon points="12,22 32,22 22,30" fill="#f7d6de" />
+              <circle cx="31" cy="40" r="5" fill="#c8432f" opacity="0.85" />
+            </svg>
+            <div><strong>쇼핑 필수템</strong><span>의약품·화장품·과자, 면세·반입 팁</span></div>
+            <b class="go" aria-hidden="true">→</b>
           </a>
         </li>
         <li>
-          <a href="liquor/">
-            <img src="liquor/icon-192.png" alt="" />
+          <a class="card" href="liquor/">
+            <!-- 종이접기 술병 -->
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <polygon points="27,6 37,6 37,18 27,18" fill="#d9a3b1" />
+              <polygon points="27,18 37,18 46,30 18,30" fill="#f2c4d0" />
+              <polygon points="18,30 32,30 32,58 20,58" fill="#ecb3c2" />
+              <polygon points="32,30 46,30 44,58 32,58" fill="#e597ab" />
+              <rect x="23" y="38" width="18" height="11" fill="#fffdf8" opacity="0.9" />
+              <text x="32" y="47" text-anchor="middle" font-size="9" font-family="serif" fill="#c8432f">酒</text>
+            </svg>
             <div><strong>술 가격 비교</strong><span>위스키·사케·소주·와인 한국가 vs 일본가, 면세 장바구니</span></div>
-            <b class="go" aria-hidden="true">›</b>
+            <b class="go" aria-hidden="true">→</b>
           </a>
         </li>
       </ul>
-      <footer>각각 홈 화면에 추가하면 앱처럼 쓸 수 있고, 한 번 열면 인터넷이 약한 곳에서도 열립니다.</footer>
+
+      <footer>각각 홈 화면에 추가하면 앱처럼 쓸 수 있고, 한 번 열어두면 인터넷이 약한 곳에서도 열려요.</footer>
     </main>
   </body>
 </html>
