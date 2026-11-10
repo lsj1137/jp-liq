@@ -88,13 +88,13 @@ const PLUS = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>';
 const TAG = { ban: '반입금지', caution: '주의' };
 const tag = (it) => (it.warn ? `<span class="tag ${it.warn.level}">${TAG[it.warn.level]}</span>` : '');
 // J픽: 일본 현지 랭킹·어워드에서 인기, K픽: 한국 여행자 쇼핑 리스트에서 인기 (picks: ['j', 'k'])
-// 목록에서는 사진 위 띠로 보여 준다: 픽은 왼쪽 위 모서리, 주의는 오른쪽 아래 모서리, 반입금지는 사진을 가로지르는 긴 띠
-const PICK_LABEL = { j: 'J픽', k: 'K픽', jk: 'J·K픽' };
+// 목록에서는 사진 위에 보여 준다: 픽은 왼쪽 위 모서리 라벨, 주의는 오른쪽 아래 모서리 라벨, 반입금지는 도장
+const PICK_LABEL = { j: 'J픽', k: 'K픽', jk: 'J·<b>K</b>픽' };
 function ribbons(it) {
   const p = (it.picks ?? []).join('');
   return (p ? `<i class="rb rb-${p}">${PICK_LABEL[p]}</i>` : '')
     + (it.warn?.level === 'caution' ? '<i class="rb rb-caution">주의</i>' : '')
-    + (it.warn?.level === 'ban' ? '<i class="sash">반입금지</i>' : '');
+    + (it.warn?.level === 'ban' ? '<i class="stamp">반입<br>금지</i>' : '');
 }
 
 // 담은 뒤엔 + / 수량 / − (1개에서 −를 누르면 목록에서 빠진다)
