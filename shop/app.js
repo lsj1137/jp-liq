@@ -1,3 +1,5 @@
+import { addBought } from './common/bag.js';
+
 const $ = (s) => document.querySelector(s);
 const CATS = {
   med: ['의약품', '💊'], beauty: ['화장품', '🧴'], daily: ['생활', '🧼'], snack: ['과자', '🍫'],
@@ -305,11 +307,13 @@ function openCart() {
       <ul class="items">${list.map(cartRow).join('')}</ul>
     </section>`;
     }).join('')}
+    ${state.paid ? '<p class="note paid">체크리스트 내 짐의 올 때 목록에 넣었어요. <a href="../check/#mine">내 짐 보기</a></p>' : ''}
     ${items.some((it) => it.warn?.level === 'ban') ? `<p class="note ban">반입금지 표시가 있는 물건은 한국에 가져갈 수 없어요. 일본에서 다 쓰거나 두고 오세요.</p>` : ''}
     <p class="note">면세는 <b>같은 날 같은 매장</b>에서 세금 제외 ¥5,000 이상일 때예요. 구매처별 합계는 한 매장에서 다 산다고 가정한 값이고, 세금은 식품 8%·그 외 10%로 계산했어요. 환급받을 물건은 수하물을 부치기 전에 공항 세관 확인을 받아야 해요.</p>
     <div class="actions">
       <button type="button" data-act="clear">비우기</button>
-      <button type="button" class="primary" data-act="close">닫기</button>
+      <button type="button" data-act="close">닫기</button>
+      <button type="button" class="primary" data-act="paid">결제 완료</button>
     </div>`;
   if (!$('#cart').open) $('#cart').showModal();
   $('#cart h2').focus();
@@ -327,6 +331,18 @@ $('#cart').addEventListener('click', (e) => {
   if (e.target === $('#cart')) return $('#cart').close();
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'close') return $('#cart').close();
+  // 결제 완료: '산 것'으로 체크한 물건(없으면 목록 전체)을 산 것으로 표시하고 체크리스트 '올 때' 짐에 넣는다.
+  // 한국 반입금지 물건은 일본에서 쓰고 오는 것이라 짐에 넣지 않는다.
+  if (act === 'paid') {
+    const items = cartItems();
+    const targets = items.some(isBought) ? items.filter(isBought) : items;
+    for (const it of targets) state.cart[it.ja].done = true;
+    addBought(targets.filter((it) => it.warn?.level !== 'ban').map((it) => ({ src: `shop:${it.ja}`, name: qty(it) > 1 ? `${it.ko} ×${qty(it)}` : it.ko })));
+    state.paid = true;
+    saveCart();
+    renderCart();
+    return openCart();
+  }
   if (act === 'clear') {
     if (!confirm('쇼핑 목록을 모두 비울까요?')) return;
     state.cart = {};
@@ -339,7 +355,10 @@ $('#cart').addEventListener('click', (e) => {
   renderCart();
   openCart();
 });
-$('#cartbar').addEventListener('click', openCart);
+$('#cartbar').addEventListener('click', () => {
+  state.paid = false;
+  openCart();
+});
 
 // ---------- 제품 상세 ----------
 function openViewer(it) {

@@ -1,10 +1,10 @@
 // 지하 매장처럼 인터넷이 약한 곳에서도 목록·쇼핑 목록·팁이 열리게 캐시한다.
 // 앱 파일을 바꿨는데 반영이 안 되면 CACHE 버전을 올린다.
-const CACHE = 'jp-shop-v7';
+const CACHE = 'jp-shop-v8';
 const IMG_CACHE = 'jp-shop-img';
 // 제품 사진은 외부 사이트 이미지라 본 것만 담아 두고, 너무 많아지면 오래된 것부터 지운다
 const IMG_MAX = 400;
-const SHELL = ['./', 'app.js', 'style.css', 'common/theme.css', 'data.json', 'manifest.webmanifest', 'icon-192.png'];
+const SHELL = ['./', 'app.js', 'style.css', 'common/theme.css', 'common/bag.js', 'data.json', 'manifest.webmanifest', 'icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

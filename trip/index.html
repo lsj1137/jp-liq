@@ -76,6 +76,10 @@
 
       /* 접힌 종이 카드: 오른쪽 위 모서리가 접혀 있다 */
       .cards { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+
+      /* 여행 종료: 맨 아래 작은 글자 버튼 */
+      .end { margin-top: 36px; text-align: center; }
+      .end button { padding: 8px 12px; border: 0; background: none; color: var(--sub); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
       .card {
         position: relative;
         display: flex;
@@ -255,6 +259,8 @@
       </section>
 
       <ul class="cards" id="cards"></ul>
+
+      <p class="end"><button type="button" id="endTrip">여행 종료 · 기록 지우기</button></p>
     </main>
 
     <dialog id="mapDlg">
@@ -326,6 +332,15 @@
       }
 
       $('#regionBtn').addEventListener('click', () => $('#mapDlg').showModal());
+
+      // 여행 종료: 이번 여행 기록만 지운다. 지역·정렬·환율·간사이 즐겨찾기 같은 설정은 남긴다.
+      const TRIP_DATA = ['jp-check', 'jp-check-bag', 'jp-money', 'jp-shop-cart', 'jp-shop-checked', 'cart'];
+      $('#endTrip').addEventListener('click', () => {
+        if (!confirm('이번 여행 기록을 모두 지울까요?\n\n· 체크리스트 체크와 내 짐\n· 여행 경비 기록\n· 쇼핑 목록\n· 술 면세 장바구니\n\n지운 기록은 되돌릴 수 없어요.')) return;
+        for (const k of TRIP_DATA) localStorage.removeItem(k);
+        $('#endTrip').textContent = '기록을 지웠어요';
+        $('#endTrip').disabled = true;
+      });
       $('#mapDlg').addEventListener('click', (e) => {
         const g = e.target.closest('.rg');
         if (g) choose(g.dataset.r);

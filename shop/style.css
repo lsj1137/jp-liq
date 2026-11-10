@@ -366,6 +366,8 @@ body:has(#cartbar:not([hidden])) footer { padding-bottom: calc(96px + env(safe-a
 #viewer .alert.caution { background: #fff4e0; color: #9a5b00; }
 #cart .items .tag { margin-right: 4px; vertical-align: 1px; }
 #cart .note.ban { color: var(--red); }
+#cart .note.paid { color: var(--blue); font-weight: 600; }
+#cart .note.paid a { color: inherit; }
 
 /* 면세·반입 팁 */
 /* 팁 창 */
