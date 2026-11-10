@@ -122,10 +122,9 @@
       .loc .caret { color: var(--sub); font-size: 11px; }
       .loc.unset { color: var(--sub); }
 
-      /* 고른 지역의 전용 메뉴 묶음 */
-      .sec { display: flex; align-items: baseline; gap: 6px; margin: 0 2px 10px; font-family: "Gowun Batang", serif; font-size: 17px; font-weight: 700; }
-      .sec span { font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 13px; font-weight: 600; color: var(--sub); }
-      #regionSec { margin-bottom: 26px; }
+      /* 고른 지역의 전용 메뉴: 간격은 다른 메뉴와 같고, 종이색만 아주 살짝 벚꽃빛 */
+      #regionSec { margin-bottom: 14px; }
+      #regionSec .card { background: #fdf3f1; }
       #regionSec[hidden] { display: none; }
 
       /* 일본 지도 팝업 */
@@ -247,7 +246,6 @@
       <h1>일본여행 가이드북 <span class="hanko" aria-hidden="true">旅</span></h1>
 
       <section id="regionSec" hidden>
-        <p class="sec" id="regionTitle"></p>
         <ul class="cards" id="regionCards"></ul>
       </section>
 
@@ -305,7 +303,6 @@
 
         const regionMenus = MENUS.filter((m) => m.region && m.region === region);
         $('#regionSec').hidden = !regionMenus.length;
-        if (region) $('#regionTitle').innerHTML = `${REGIONS[region][0]}<span>${REGIONS[region][1]}</span>`;
         $('#regionCards').innerHTML = regionMenus.map(card).join('');
         $('#cards').innerHTML = MENUS.filter((m) => !m.region).map(card).join('');
 
