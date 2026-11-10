@@ -23,7 +23,7 @@
   <body>
     <header>
       <div class="titlebar">
-        <h1><a class="back" href="/" aria-label="메인으로" onclick="var r=document.referrer;if(r.indexOf(location.origin+'/')===0&&/^\/(trip\/)?([?#]|$)/.test(r.slice(location.origin.length))){history.back();return false}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></a>일본 쇼핑 필수템</h1>
+        <h1><a class="back" href="/" aria-label="메인으로" onclick="var r=document.referrer;if(history.length>1&&r.indexOf(location.origin+'/')===0&&/^\/(trip\/)?([?#]|$)/.test(r.slice(location.origin.length))){history.back();return false}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></a>일본 쇼핑 필수템</h1>
         <button type="button" id="tipsBtn"><span class="seal" aria-hidden="true">免</span>면세·반입 팁</button>
       </div>
       <form class="search" onsubmit="return false">

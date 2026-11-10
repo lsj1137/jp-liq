@@ -20,7 +20,13 @@ const state = {
   rate: Number(localStorage.getItem('krwPerJpy')) || 8.6,
   usd: Number(localStorage.getItem('usdPerJpy')) || 0.0064,
   // 면세 장바구니: [{ id, paid }] paid는 면세 환급 후 실제로 부담하는 엔화
-  cart: JSON.parse(localStorage.getItem('cart') || '[]'),
+  cart: (() => {
+    try {
+      return JSON.parse(localStorage.getItem('cart') || '[]');
+    } catch {
+      return [];
+    }
+  })(),
   rateNote: '저장된 환율',
   open: null,
   cat: 'all',
@@ -184,8 +190,10 @@ function renderRate() {
 async function loadRate() {
   try {
     const d = await (await fetch('api/rate')).json();
-    state.rate = d.krwPerJpy;
-    state.usd = d.usdPerJpy ?? state.usd;
+    if (d.live || !localStorage.getItem('krwPerJpy')) {
+      state.rate = d.krwPerJpy;
+      state.usd = d.usdPerJpy ?? state.usd;
+    }
     state.rateNote = d.live ? `실시간 · ${new Date(d.updated).toLocaleDateString('ko-KR')}` : '기본값';
     if (d.live) {
       localStorage.setItem('krwPerJpy', d.krwPerJpy);
@@ -221,8 +229,8 @@ async function identify(source) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ image: await toDataUrl(source) }),
     });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error);
+    const d = await r.json().catch(() => ({ error: '서버가 잠시 응답하지 않아요. 잠시 뒤 다시 해 주세요.' }));
+    if (!r.ok || d.error) throw new Error(d.error);
     const w = state.list.find((x) => x.id === d.id);
     if (w) {
       $('#q').value = w.ko;
@@ -265,7 +273,7 @@ async function openCamera() {
   const video = $('#camera video');
   video.srcObject = stream;
   $('#camera').showModal();
-  await video.play();
+  await video.play().catch(() => {});
 }
 
 function closeCamera() {
@@ -279,7 +287,9 @@ $('#camera').addEventListener('cancel', closeCamera);
 $('#camera').addEventListener('click', async (e) => {
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'shot') {
-    const shot = await createImageBitmap($('#camera video'));
+    // 카메라가 아직 준비 안 됐으면 무시 (다시 누르면 됨)
+    const shot = await createImageBitmap($('#camera video')).catch(() => null);
+    if (!shot) return;
     closeCamera();
     identify(shot);
   } else if (act === 'album') {
@@ -340,11 +350,6 @@ state.list = (await (await fetch('whiskies.json')).json())
     const hay = names.join('|');
     return { ...w, _names: names, _hay: hay, _cho: chosung(hay) };
   });
-$('#q').value = new URLSearchParams(location.search).get('q') ?? '';
-state.open = 'first';
-renderRate();
-render();
-loadRate();
 
 // ── 면세 장바구니 ───────────────────────────────────────────
 // 한국 입국 시 술 면세 한도 (관세청, 2025.3.21부터 병 수 제한 없음): 합계 2L 이하이고 $400 이하.
@@ -479,8 +484,10 @@ async function pay() {
     buttons: [{ value: null, label: '취소' }, { value: 'ok', label: '결제 완료', kind: 'primary' }],
   });
   if (!r) return;
+  const paidAmount = r.amount === '' ? amount : Number(r.amount);
+  if (!(paidAmount > 0)) return toast('결제 금액을 확인해 주세요');
   for (const c of todo) c.settled = true;
-  addExpense({ amount: Number(r.amount) || amount, pay: r.pay, memo: `술: ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ''}` });
+  addExpense({ amount: paidAmount, pay: r.pay, memo: `술: ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ''}` });
   addBought(count(state.cart.filter((c) => byId(c.id))).map((x) => ({ src: `liquor:${x.id}`, name: x.name })));
   saveCart();
   toast('여행 경비와 올 때 짐에 넣었어요', { link: { href: '../check/#mine', label: '내 짐 보기' } });
@@ -556,6 +563,13 @@ $('#cart').addEventListener('input', (e) => {
 $('#cart').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.target.dataset.idx !== undefined) e.target.blur();
 });
+// 첫 화면: 장바구니 함수까지 다 정의된 뒤에 그린다 (주소의 ?q= 로 바로 검색해서 열 수 있음)
+state.cart = state.cart.filter((c) => byId(c.id));
+$('#q').value = new URLSearchParams(location.search).get('q') ?? '';
+state.open = 'first';
+renderRate();
+render();
+loadRate();
 renderCart();
 
 // 오프라인에서도 열리도록 서비스 워커 등록 (sw.js)

@@ -38,8 +38,15 @@ const TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 
+// 요청 하나에서 난 예상 못 한 오류가 서버 전체를 끄지 않게 한다
+const safe = (handler) => (req, res) =>
+  handler(req, res).catch((e) => {
+    console.error(e);
+    if (!res.headersSent) res.writeHead(500).end();
+  });
+
 http
-  .createServer(async (req, res) => {
+  .createServer(safe(async (req, res) => {
     const { pathname } = new URL(req.url, 'http://localhost');
     const api = API[pathname];
     if (api) {
@@ -57,7 +64,12 @@ http
     if (bare) return res.writeHead(301, { location: bare[0] }).end();
 
     const [prefix, root] = MOUNTS.find(([p]) => pathname.startsWith(p));
-    const rel = decodeURIComponent(pathname.slice(prefix.length));
+    let rel;
+    try {
+      rel = decodeURIComponent(pathname.slice(prefix.length));
+    } catch {
+      return res.writeHead(400).end('Bad request');
+    }
     const file = normalize(join(root, rel === '' || rel.endsWith('/') ? rel + 'index.html' : rel));
     if (!file.startsWith(root)) return res.writeHead(403).end();
     try {
@@ -66,11 +78,13 @@ http
         'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
         // 병 사진은 거의 안 바뀌니 오래 캐시, 나머지는 매번 새로 확인
         'cache-control': pathname.startsWith('/img/') ? 'public, max-age=604800' : 'no-cache',
+        // 메인 서비스 워커는 /trip/ 에 있지만 메인 주소(/) 전체를 맡는다
+        ...(pathname === '/trip/sw.js' && { 'service-worker-allowed': '/' }),
       }).end(data);
     } catch {
       res.writeHead(404).end('Not found');
     }
-  })
+  }))
   .listen(PORT, HOST, () => {
     console.log(`jp-trip: http://${HOST}:${PORT}  (/ 술, ${APPS.map((a) => `/${a}/`).join(' ')})`);
     if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) console.log('  (GEMINI_API_KEY / ANTHROPIC_API_KEY 없음 → 사진 인식 비활성)');

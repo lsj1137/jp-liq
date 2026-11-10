@@ -2,6 +2,8 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
+    <!-- 메인은 / 와 /trip/ 둘 다로 열리므로 상대 경로의 기준을 / 로 고정한다 -->
+    <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#f7f1e7" />
     <meta name="robots" content="noindex" />
@@ -365,7 +367,7 @@
         let day = '';
         for (const e of money) {
           if (e.date !== day) out.push('', `${(day = e.date).replaceAll('-', '.')}`);
-          out.push(`  ${e.cur === 'KRW' ? won(e.amount) : yen(e.amount)}  ${CAT[e.cat] ?? ''} · ${e.pay === 'cash' ? '현금' : '카드'}${e.memo ? ` · ${e.memo}` : ''}`);
+          out.push(`  ${e.cur === 'KRW' ? `${Math.round(e.amount).toLocaleString('ko-KR')}원` : yen(e.amount)}  ${CAT[e.cat] ?? ''} · ${e.pay === 'cash' ? '현금' : '카드'}${e.memo ? ` · ${e.memo}` : ''}`);
         }
 
         const cart = read('jp-shop-cart', {});
@@ -430,7 +432,7 @@
         const ok =
           r.button === 'txt'
             ? await saveFile(`일본여행-기록-${stamp()}.txt`, await report(), 'text/plain')
-            : await saveFile(`일본여행-백업-${stamp()}.json`, JSON.stringify({ app: 'jp-trip', version: 1, exported: new Date().toISOString(), data: Object.fromEntries(TRIP_DATA.filter((k) => localStorage.getItem(k) !== null).map((k) => [k, read(k)])) }, null, 1), 'application/json');
+            : await saveFile(`일본여행-백업-${stamp()}.json`, JSON.stringify({ app: 'jp-trip', version: 1, date: stamp(), exported: new Date().toISOString(), data: Object.fromEntries(TRIP_DATA.filter((k) => localStorage.getItem(k) !== null).map((k) => [k, read(k)])) }, null, 1), 'application/json');
         if (ok) toast(r.button === 'txt' ? '기록을 저장했어요' : '백업 파일을 저장했어요');
       });
 
@@ -443,8 +445,8 @@
         try {
           backup = JSON.parse(await f.text());
         } catch {}
-        if (backup?.app !== 'jp-trip' || typeof backup.data !== 'object') return toast('일본여행 가이드북 백업 파일이 아니에요');
-        if (!(await confirmBox('백업을 불러올까요?', `${(backup.exported ?? '').slice(0, 10)} 백업이에요. 지금 이 폰의 여행 기록은 백업 내용으로 바뀌어요.`, { ok: '불러오기', danger: true }))) return;
+        if (backup?.app !== 'jp-trip' || !backup.data || typeof backup.data !== 'object' || Array.isArray(backup.data)) return toast('일본여행 가이드북 백업 파일이 아니에요');
+        if (!(await confirmBox('백업을 불러올까요?', `${backup.date ?? (backup.exported ?? '').slice(0, 10)} 백업이에요. 지금 이 폰의 여행 기록은 백업 내용으로 바뀌어요.`, { ok: '불러오기', danger: true }))) return;
         for (const k of TRIP_DATA) localStorage.removeItem(k);
         for (const [k, v] of Object.entries(backup.data)) if (TRIP_DATA.includes(k)) localStorage.setItem(k, JSON.stringify(v));
         toast('백업을 불러왔어요');
@@ -475,6 +477,9 @@
         }
       });
       render();
+
+      // 인터넷 없이도 메인이 열리게 (홈 화면 앱의 시작 화면)
+      if ('serviceWorker' in navigator && location.pathname === '/') navigator.serviceWorker.register('/trip/sw.js', { scope: '/' });
     </script>
   </body>
 </html>

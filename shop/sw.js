@@ -1,6 +1,6 @@
 // 지하 매장처럼 인터넷이 약한 곳에서도 목록·쇼핑 목록·팁이 열리게 캐시한다.
 // 앱 파일을 바꿨는데 반영이 안 되면 CACHE 버전을 올린다.
-const CACHE = 'jp-shop-v10';
+const CACHE = 'jp-shop-v11';
 const IMG_CACHE = 'jp-shop-img';
 // 제품 사진은 외부 사이트 이미지라 본 것만 담아 두고, 너무 많아지면 오래된 것부터 지운다
 const IMG_MAX = 400;
@@ -49,9 +49,13 @@ async function imageCache(req) {
   if (hit) return hit;
   const res = await fetch(req);
   if (res.ok || res.type === 'opaque') {
-    await cache.put(req, res.clone());
-    const keys = await cache.keys();
-    for (const k of keys.slice(0, Math.max(0, keys.length - IMG_MAX))) await cache.delete(k);
+    try {
+      await cache.put(req, res.clone());
+      const keys = await cache.keys();
+      for (const k of keys.slice(0, Math.max(0, keys.length - IMG_MAX))) await cache.delete(k);
+    } catch {
+      // 저장 공간 부족 등: 캐시만 못 할 뿐 사진은 그대로 보여 준다
+    }
   }
   return res;
 }
@@ -63,7 +67,8 @@ async function networkFirst(req) {
   try {
     const net = fetch(req).then((res) => {
       if (res.ok) cache.put(req, res.clone());
-      return res;
+      // 서버 재시작 중 502 같은 오류면 캐시된 것을 보여 준다
+      return !res.ok && hit ? hit : res;
     });
     return await (hit ? Promise.race([net, new Promise((_, rej) => setTimeout(rej, 3000))]) : net);
   } catch {

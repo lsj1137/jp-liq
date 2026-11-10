@@ -25,10 +25,22 @@ const RATE_TTL = 12 * 3600 * 1000;
 
 // 쇼핑 목록: { 일본어명: { n: 수량, done: 샀는지 } }
 // 예전 형식({ 일본어명: 샀는지 })과 더 예전 체크 목록(jp-shop-checked)은 1개 담은 것으로 옮긴다
+// paidN: 그중 이미 '결제 완료'로 경비에 기록한 수량 (수량을 늘리면 늘린 만큼만 다시 결제)
 function loadCart() {
-  const saved = localStorage.getItem('jp-shop-cart');
-  const raw = saved ? JSON.parse(saved) : Object.fromEntries(JSON.parse(localStorage.getItem('jp-shop-checked') || '[]').map((ja) => [ja, false]));
-  return Object.fromEntries(Object.entries(raw).map(([ja, v]) => [ja, typeof v === 'object' && v ? v : { n: 1, done: !!v }]));
+  let raw;
+  try {
+    const saved = localStorage.getItem('jp-shop-cart');
+    raw = saved ? JSON.parse(saved) : Object.fromEntries(JSON.parse(localStorage.getItem('jp-shop-checked') || '[]').map((ja) => [ja, false]));
+  } catch {
+    raw = {};
+  }
+  return Object.fromEntries(
+    Object.entries(raw ?? {}).map(([ja, v]) => {
+      if (typeof v !== 'object' || !v) return [ja, { n: 1, done: !!v, paidN: 0 }];
+      const n = Math.max(1, Number(v.n) | 0);
+      return [ja, { n, done: !!v.done, paidN: Math.min(n, v.paidN ?? (v.paid ? n : 0)) }];
+    }),
+  );
 }
 
 const state = {
@@ -71,6 +83,7 @@ const won = (n) => `${(Math.round(n / 100) * 100).toLocaleString('ko-KR')}원`;
 const inCart = (it) => it.ja in state.cart;
 const qty = (it) => state.cart[it.ja]?.n ?? 0;
 const isBought = (it) => !!state.cart[it.ja]?.done;
+const paidN = (it) => state.cart[it.ja]?.paidN ?? 0;
 
 // 제품 사진은 외부 이미지라 막히면 검색 썸네일 → 그래도 안 되면 분류 이모지로 바꾼다
 function pic(it, cls = 'pic') {
@@ -259,13 +272,13 @@ function renderCart() {
 async function toggleCart(it) {
   if (inCart(it)) delete state.cart[it.ja];
   else if (it.warn?.level === 'ban' && !(await confirmBox('한국에 가져갈 수 없는 물건이에요', `<b>${esc(it.ko)}</b><br>${esc(it.warn.reason)}<br><br>일본에서 쓸 용도로 담을까요?`, { ok: '담기' }))) return false;
-  else state.cart[it.ja] = { n: 1, done: false };
+  else state.cart[it.ja] = { n: 1, done: false, paidN: 0 };
   saveCart();
   return true;
 }
 function setQty(it, n) {
   if (n <= 0) delete state.cart[it.ja];
-  else state.cart[it.ja].n = n;
+  else Object.assign(state.cart[it.ja], { n, paidN: Math.min(paidN(it), n) });
   saveCart();
 }
 
@@ -277,7 +290,7 @@ const exTax = (it) => it.price / ((['snack', 'kansai'].includes(it.cat) || (it.c
 function cartRow(it) {
   return `
         <li class="${isBought(it) ? 'bought' : ''}" data-ja="${esc(it.ja)}">
-          <label><input type="checkbox" ${isBought(it) ? 'checked' : ''} /><span class="nm">${tag(it)}${esc(it.ko)}</span></label>
+          <label><input type="checkbox" ${isBought(it) ? 'checked' : ''} /><span class="nm">${tag(it)}${esc(it.ko)}${paidN(it) ? `<small class="paidmark">${paidN(it) < qty(it) ? `${paidN(it)}개 결제` : '결제함'}</small>` : ''}</span></label>
           <span class="step"><button type="button" data-dec aria-label="하나 빼기">−</button><b>${qty(it)}</b><button type="button" data-inc aria-label="하나 더">+</button></span>
           <span class="yen">${yen(it.price * qty(it))}</span>
         </li>`;
@@ -302,7 +315,8 @@ function openCart() {
     ${groups.map(([label, list]) => {
       const total = list.reduce((n, it) => n + it.price * qty(it), 0);
       const ex = list.reduce((n, it) => n + exTax(it) * qty(it), 0);
-      const left = Math.ceil(TAX_FREE_MIN - ex);
+      // 남은 금액은 화면의 가격처럼 세금 포함으로 (이 매장 물건들의 평균 세율로 환산)
+      const left = Math.ceil((TAX_FREE_MIN - ex) * (total / ex));
       return `
     <section class="store">
       <h3><span>${label}</span><small>${yen(total)}</small>${left <= 0 ? '<em class="ok">면세 가능</em>' : `<em>면세까지 ${yen(left)}</em>`}</h3>
@@ -316,8 +330,10 @@ function openCart() {
       <button type="button" data-act="close">닫기</button>
       <button type="button" class="primary" data-act="paid">결제 완료</button>
     </div>`;
-  if (!$('#cart').open) $('#cart').showModal();
-  $('#cart h2').focus();
+  if (!$('#cart').open) {
+    $('#cart').showModal();
+    $('#cart h2').focus();
+  }
 }
 
 $('#cart').addEventListener('change', (e) => {
@@ -331,20 +347,23 @@ $('#cart').addEventListener('change', (e) => {
 // 결제 완료: 아직 결제 안 한 물건 중 '산 것'으로 체크한 것(없으면 전부)을 실제 결제 금액과 함께
 // 여행 경비에 기록하고, 체크리스트 '올 때' 짐에 넣는다. 한국 반입금지 물건은 일본에서 쓰고 오는 것이라 짐에는 넣지 않는다.
 async function pay() {
-  const unpaid = cartItems().filter((it) => !state.cart[it.ja].paid);
+  const unpaid = cartItems().filter((it) => qty(it) > paidN(it));
   // 비싼 것부터 (경비 메모에 대표 물건 이름이 오게)
-  const targets = (unpaid.some(isBought) ? unpaid.filter(isBought) : unpaid).sort((a, b) => b.price * qty(b) - a.price * qty(a));
+  const due = (it) => qty(it) - paidN(it);
+  const targets = (unpaid.some(isBought) ? unpaid.filter(isBought) : unpaid).sort((a, b) => b.price * due(b) - a.price * due(a));
   if (!targets.length) return toast('이미 결제 완료한 물건들이에요');
-  const amount = targets.reduce((n, it) => n + it.price * qty(it), 0);
-  const names = targets.map((it) => (qty(it) > 1 ? `${it.ko} ×${qty(it)}` : it.ko));
+  const amount = targets.reduce((n, it) => n + it.price * due(it), 0);
+  const names = targets.map((it) => (due(it) > 1 ? `${it.ko} ×${due(it)}` : it.ko));
   const r = await ask({
     title: '결제 완료',
     body: payFields(amount, `<b>${esc(names.slice(0, 3).join(', '))}${names.length > 3 ? ` 외 ${names.length - 3}개` : ''}</b><br>여행 경비에 기록하고 올 때 챙길 짐에 넣어요. 금액은 참고가 합계라 영수증대로 고쳐 주세요.`),
     buttons: [{ value: null, label: '취소' }, { value: 'ok', label: '결제 완료', kind: 'primary' }],
   });
   if (!r) return;
-  for (const it of targets) Object.assign(state.cart[it.ja], { done: true, paid: true });
-  addExpense({ amount: Number(r.amount) || amount, pay: r.pay, memo: `쇼핑: ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ''}` });
+  const paidAmount = r.amount === '' ? amount : Number(r.amount);
+  if (!(paidAmount > 0)) return toast('결제 금액을 확인해 주세요');
+  for (const it of targets) Object.assign(state.cart[it.ja], { done: true, paidN: qty(it) });
+  addExpense({ amount: paidAmount, pay: r.pay, memo: `쇼핑: ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ''}` });
   addBought(targets.filter((it) => it.warn?.level !== 'ban').map((it) => ({ src: `shop:${it.ja}`, name: qty(it) > 1 ? `${it.ko} ×${qty(it)}` : it.ko })));
   saveCart();
   renderCart();
@@ -410,7 +429,8 @@ $('#list').addEventListener('click', async (e) => {
   if (e.target.closest('.pick, [data-inc], [data-dec]')) {
     if (e.target.closest('.pick')) { if (!(await toggleCart(it))) return; }
     else setQty(it, qty(it) + (e.target.closest('[data-inc]') ? 1 : -1));
-    li.outerHTML = row(it);
+    const now = $(`#list .row[data-id="${it.id}"]`);
+    if (now) now.outerHTML = row(it);
     renderCart();
     return;
   }

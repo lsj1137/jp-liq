@@ -16,7 +16,10 @@ export function addBought(entries) {
   let added = 0;
   for (const { src, name } of entries) {
     const old = bag.items.find((it) => it.src === src);
-    if (old) old.name = name;
+    if (old) {
+      if (old.name !== name) old.back = false;
+      old.name = name;
+    }
     else {
       bag.items.push({ id: newId(), name, go: false, back: false, src });
       added++;

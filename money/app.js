@@ -14,9 +14,16 @@ const CAT = Object.fromEntries(CATS);
 const PAY = { cash: '현금', card: '카드' };
 const KEY = 'jp-money';
 
+const load = () => {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) || '[]');
+  } catch {
+    return [];
+  }
+};
 const state = {
   // [{ id, date: 'YYYY-MM-DD', amount, cur: 'JPY'|'KRW', cat, pay, memo }]
-  list: JSON.parse(localStorage.getItem(KEY) || '[]'),
+  list: load(),
   // 술 가격 앱과 같은 도메인이라 그 앱이 저장한 환율을 같이 쓴다
   rate: Number(localStorage.getItem('krwPerJpy')) || 8.6,
   cat: 'all',
@@ -25,6 +32,8 @@ const state = {
 
 const yen = (n) => `¥${Math.round(n).toLocaleString('ja-JP')}`;
 const won = (n) => `${(Math.round(n / 100) * 100).toLocaleString('ko-KR')}원`;
+// 직접 원화로 적은 금액은 반올림하지 않는다
+const wonExact = (n) => `${Math.round(n).toLocaleString('ko-KR')}원`;
 const toYen = (e) => (e.cur === 'KRW' ? e.amount / state.rate : e.amount);
 const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 const dayLabel = (d) => {
@@ -65,12 +74,12 @@ function render() {
       ([d, items]) => `<li class="day"><span>${dayLabel(d)}</span><span>${yen(sum(items))}</span></li>
       ${items
         .map(
-          (e) => `<li class="row" data-id="${e.id}">
+          (e) => `<li class="row" data-id="${esc(e.id)}">
         <span class="cat">${CAT[e.cat]}</span>
         <div class="what"><p class="memo">${esc(e.memo || CAT[e.cat])}</p><p class="pay">${PAY[e.pay]}</p></div>
         <div class="amt">${
           e.cur === 'KRW'
-            ? `<b>${won(e.amount)}</b><span>${yen(toYen(e))}</span>`
+            ? `<b>${wonExact(e.amount)}</b><span>${yen(toYen(e))}</span>`
             : `<b>${yen(e.amount)}</b><span>${won(e.amount * state.rate)}</span>`
         }</div>
       </li>`,
@@ -121,6 +130,7 @@ $('#list').addEventListener('click', (e) => {
 $('#edit form').addEventListener('submit', () => {
   const amount = Number($('#amt').value);
   if (!amount) return;
+  state.list = load();
   const entry = {
     id: state.editing ?? Date.now(),
     date: $('#date').value || today(),
@@ -139,7 +149,7 @@ $('#edit form').addEventListener('submit', () => {
 $('#edit [data-cancel]').addEventListener('click', () => $('#edit').close());
 $('#edit [data-del]').addEventListener('click', async () => {
   if (!(await confirmBox('이 기록을 지울까요?', '', { ok: '지우기', danger: true }))) return;
-  state.list = state.list.filter((x) => x.id !== state.editing);
+  state.list = load().filter((x) => x.id !== state.editing);
   $('#edit').close();
   save();
 });
@@ -162,12 +172,21 @@ $('#cats').addEventListener('click', (e) => {
 });
 
 render();
+// 다른 앱에서 기록이 추가됐을 수 있으니 화면에 돌아올 때마다 다시 읽는다
+const refresh = () => {
+  if (document.visibilityState !== 'visible' || $('#edit').open) return;
+  state.list = load();
+  render();
+};
+addEventListener('pageshow', refresh);
+document.addEventListener('visibilitychange', refresh);
 
 // 환율: 술 가격 앱의 환율 API를 같이 쓴다. 오프라인이면 마지막 값.
 fetch('../liquor/api/rate')
   .then((r) => r.json())
   .then((d) => {
-    state.rate = d.krwPerJpy;
+    // 서버가 기본값(live:false)을 주면 저장된 마지막 실시간 환율을 그대로 쓴다
+    if (d.live || !localStorage.getItem('krwPerJpy')) state.rate = d.krwPerJpy;
     if (d.live) localStorage.setItem('krwPerJpy', d.krwPerJpy);
     render();
   })

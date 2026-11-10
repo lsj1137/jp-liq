@@ -5978,15 +5978,6 @@
   },
   {
    "cat": "goods",
-   "ko": "리파 하트브러시",
-   "ja": "ReFa HEART BRUSH",
-   "where": "로프트·문구점·백화점",
-   "price": 3850,
-   "img": "https://www.refa.net/en/item/refa_heart_brush/images/img-product_rosegold.jpg",
-   "thumb": "https://ts2.mm.bing.net/th?id=OIP.BKuaDx1D69dib80VPR2w8AHaGv&pid=15.1"
-  },
-  {
-   "cat": "goods",
    "ko": "포터 탱커 숄더백",
    "ja": "吉田カバン PORTER TANKER ショルダーバッグ",
    "where": "포터 매장·백화점",
@@ -8435,19 +8426,6 @@
   },
   {
    "cat": "kansai",
-   "ko": "기쿠마사무네 일본주 스킨",
-   "ja": "菊正宗 日本酒の化粧水 高保湿 500ml",
-   "where": "드럭스토어",
-   "price": 900,
-   "img": "https://item-shopping.c.yimg.jp/i/f/isshusouden-2_40079986",
-   "thumb": "https://ts1.mm.bing.net/th?id=OIP.A4rOP8GqTZJuvUhQbVN1vQHaHa&pid=15.1",
-   "warn": {
-    "level": "caution",
-    "reason": "액체·젤 100ml 초과 — 위탁수하물로"
-   }
-  },
-  {
-   "cat": "kansai",
    "ko": "551호라이 슈마이",
    "ja": "551蓬莱 焼売",
    "where": "오사카역·난바 매장",
@@ -8609,15 +8587,6 @@
    "picks": [
     "k"
    ]
-  },
-  {
-   "cat": "kansai",
-   "ko": "나카가와 마사시치 하나후킨",
-   "ja": "中川政七商店 花ふきん",
-   "where": "나라 매장·백화점",
-   "price": 770,
-   "img": "https://m.media-amazon.com/images/I/61LWnCEbmeL._AC_.jpg",
-   "thumb": "https://ts1.mm.bing.net/th?id=OIP.GfUTqRpQ1S8eiEHJggZV8gHaGd&pid=15.1"
   },
   {
    "cat": "kansai",

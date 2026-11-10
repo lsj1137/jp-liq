@@ -21,7 +21,7 @@
   </head>
   <body>
     <header>
-      <h1><a class="back" href="/" aria-label="메인으로" onclick="var r=document.referrer;if(r.indexOf(location.origin+'/')===0&&/^\/(trip\/)?([?#]|$)/.test(r.slice(location.origin.length))){history.back();return false}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></a>일본 술 가격 비교</h1>
+      <h1><a class="back" href="/" aria-label="메인으로" onclick="var r=document.referrer;if(history.length>1&&r.indexOf(location.origin+'/')===0&&/^\/(trip\/)?([?#]|$)/.test(r.slice(location.origin.length))){history.back();return false}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></a>일본 술 가격 비교</h1>
       <form class="search" onsubmit="return false">
         <svg class="glass" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
         <input id="q" type="search" placeholder="이름으로 검색 (닷사이, 야마자키, ㅁㅇ)" autocomplete="off" enterkeyhint="search" />

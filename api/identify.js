@@ -141,8 +141,8 @@ export default async function handler(req, res) {
   let body;
   try {
     body = await readJson(req);
-  } catch {
-    return send(res, 413, { error: '사진이 너무 커요.' });
+  } catch (e) {
+    return e.message === 'too large' ? send(res, 413, { error: '사진이 너무 커요.' }) : send(res, 400, { error: '요청 형식이 잘못됐어요.' });
   }
   const m = /^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/.exec(body?.image ?? '');
   if (!m) return send(res, 400, { error: '이미지 형식이 올바르지 않아요.' });

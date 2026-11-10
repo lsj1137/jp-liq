@@ -1,7 +1,7 @@
 // 인터넷이 약한 곳에서도 열리게 앱 파일을 캐시한다.
 // 앱 파일을 바꿨는데 폰에 반영이 안 되면 CACHE 버전을 올린다.
 // 같은 도메인의 다른 앱 캐시를 지우지 않도록 자기 접두어(jp-talk-)로 시작하는 옛 캐시만 정리한다.
-const CACHE = 'jp-talk-v3';
+const CACHE = 'jp-talk-v4';
 const BASE = new URL('./', location).pathname;
 const SHELL = ['./', 'app.js', 'style.css', 'common/base.css', 'common/theme.css', 'data.json', 'manifest.webmanifest', 'icon-192.png'];
 
@@ -42,7 +42,8 @@ async function networkFirst(req) {
   try {
     const net = fetch(req).then((res) => {
       if (res.ok) cache.put(req, res.clone());
-      return res;
+      // 서버 재시작 중 502 같은 오류면 캐시된 것을 보여 준다
+      return !res.ok && hit ? hit : res;
     });
     return await (hit ? Promise.race([net, new Promise((_, rej) => setTimeout(rej, 3000))]) : net);
   } catch {

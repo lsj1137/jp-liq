@@ -5,11 +5,25 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const KEY = 'jp-check';
 
-const state = { groups: [], items: [], done: new Set(JSON.parse(localStorage.getItem(KEY) || '[]')), group: 'all' };
+const loadDone = () => {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+  } catch {
+    return new Set();
+  }
+};
+const state = { groups: [], items: [], done: loadDone(), group: 'all' };
 
 // 내 짐: 직접 적은 준비물을 갈 때·올 때 따로 체크한다. 쇼핑·술 앱에서 결제 완료한 물건(src 있음)은 올 때에만 나온다.
 let bag = loadBag();
 const saveBag = () => storeBag(bag);
+// 쇼핑·술 앱이 짐을 넣었거나 메인에서 여행 종료로 지웠을 수 있으니, 바꾸기 직전에 저장된 값을 다시 읽는다
+const reload = () => {
+  const phase = bag.phase; // 지금 보고 있는 갈 때·올 때는 유지
+  bag = loadBag();
+  bag.phase = phase;
+  state.done = loadDone();
+};
 const PHASES = { go: '갈 때', back: '올 때' };
 // 자주 챙기고, 돌아올 때 숙소에 두고 오기 쉬운 것
 const SUGGEST = ['여권', '지갑·카드', '휴대폰 충전기', '보조배터리', '돼지코(110V 어댑터)', '이어폰', '안경·렌즈', '상비약', '세면도구', '화장품 파우치', '잠옷', '우산', '선글라스', '목베개', '카메라·충전기', '손목시계'];
@@ -17,7 +31,7 @@ const SUGGEST = ['여권', '지갑·카드', '휴대폰 충전기', '보조배�
 // 설명 안의 **굵게** 는 주의할 숫자·날짜 강조
 const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 
-const bagRow = (it) => `<li class="row mine${it[bag.phase] ? ' done' : ''}" data-bag="${it.id}">
+const bagRow = (it) => `<li class="row mine${it[bag.phase] ? ' done' : ''}" data-bag="${esc(it.id)}">
           <span class="box" aria-hidden="true">✓</span>
           <div class="txt"><p class="t">${esc(it.name)}</p>${bag.phase === 'back' && !it.go && !it.src ? '<p class="d">갈 때 체크 안 함</p>' : ''}</div>
           <button type="button" class="del" aria-label="${esc(it.name)} 지우기">×</button>
@@ -45,6 +59,7 @@ function renderBag() {
 }
 
 function addBag(name) {
+  reload();
   name = name.trim();
   if (!name || bag.items.some((it) => it.name === name)) return;
   bag.items.push({ id: newId(), name, go: false, back: false });
@@ -83,10 +98,13 @@ $('#list').addEventListener('click', async (e) => {
   if (e.target.closest('a')) return;
   const mine = e.target.closest('[data-bag]');
   if (mine) {
-    const it = bag.items.find((x) => x.id === mine.dataset.bag);
+    reload();
+    let it = bag.items.find((x) => x.id === mine.dataset.bag);
+    if (!it) return render();
     if (e.target.closest('.del')) {
       if (!(await confirmBox('목록에서 지울까요?', esc(it.name), { ok: '지우기', danger: true }))) return;
-      bag.items = bag.items.filter((x) => x !== it);
+      reload();
+      bag.items = bag.items.filter((x) => x.id !== it.id);
     } else it[bag.phase] = !it[bag.phase];
     saveBag();
     return render();
@@ -99,6 +117,7 @@ $('#list').addEventListener('click', async (e) => {
   const row = e.target.closest('.row');
   if (!row) return;
   const id = row.dataset.id;
+  reload();
   if (state.done.has(id)) state.done.delete(id);
   else state.done.add(id);
   localStorage.setItem(KEY, JSON.stringify([...state.done]));
@@ -113,13 +132,16 @@ $('#list').addEventListener('submit', (e) => {
 $('#count').addEventListener('click', (e) => {
   const b = e.target.closest('[data-phase]');
   if (!b) return;
+  reload();
   bag.phase = b.dataset.phase;
   saveBag();
   render();
 });
 $('#reset').addEventListener('click', async () => {
+  reload();
   if (state.group === 'mine') {
     if (!bag.items.some((it) => it[bag.phase]) || !(await confirmBox(`${PHASES[bag.phase]} 체크를 모두 지울까요?`, '', { ok: '지우기', danger: true }))) return;
+    reload();
     for (const it of bag.items) it[bag.phase] = false;
     saveBag();
     return render();
@@ -150,11 +172,13 @@ if (location.hash === '#mine') {
   for (const x of $('#cats').children) x.classList.toggle('on', x.dataset.g === 'mine');
 }
 render();
-// 다른 앱에서 짐을 바꾸고 뒤로 돌아온 경우 다시 읽는다
-addEventListener('pageshow', (e) => {
-  if (!e.persisted) return;
-  bag = loadBag();
+// 다른 앱에서 짐을 바꾸고 돌아온 경우 다시 읽는다
+const refresh = () => {
+  if (document.visibilityState !== 'visible') return;
+  reload();
   render();
-});
+};
+addEventListener('pageshow', refresh);
+document.addEventListener('visibilitychange', refresh);
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');

@@ -23,6 +23,7 @@ const CSS = `
 .ui-ask .btns button.primary { background: var(--blue, #36c); color: #fff; }
 .ui-ask .btns button.danger { background: var(--red, #c33); color: #fff; }
 .ui-toast { position: fixed; inset: auto 0 calc(96px + env(safe-area-inset-bottom)); width: max-content; max-width: min(90vw, 420px); margin: 0 auto; padding: 12px 16px; border: 0; border-radius: 12px; background: rgba(47, 42, 38, 0.94); color: #fffdf8; font: 600 14px/1.45 "Pretendard Variable", Pretendard, sans-serif; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18); opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; }
+.ui-toast:not(.show) { pointer-events: none; }
 .ui-toast.show { opacity: 1; transform: none; }
 .ui-toast a { margin-left: 10px; color: #f6c4d1; font-weight: 700; text-decoration: none; white-space: nowrap; }
 `;
@@ -72,7 +73,7 @@ export async function confirmBox(title, body = '', { ok = '확인', cancel = '�
 }
 
 // toast('메시지', { link: { href, label } }) — 아래쪽에 잠깐 떴다 사라진다. 열린 창(dialog) 위에도 보이게 popover로 띄운다.
-let toastEl, timer;
+let toastEl, timer, hideTimer;
 export function toast(msg, { link, ms = 2600 } = {}) {
   style();
   if (!toastEl) {
@@ -90,8 +91,9 @@ export function toast(msg, { link, ms = 2600 } = {}) {
   }
   requestAnimationFrame(() => toastEl.classList.add('show'));
   clearTimeout(timer);
+  clearTimeout(hideTimer);
   timer = setTimeout(() => {
     toastEl.classList.remove('show');
-    setTimeout(() => toastEl.popover && toastEl.matches(':popover-open') && toastEl.hidePopover(), 250);
+    hideTimer = setTimeout(() => toastEl.popover && toastEl.matches(':popover-open') && toastEl.hidePopover(), 250);
   }, ms);
 }
