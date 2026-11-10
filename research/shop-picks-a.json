@@ -1,0 +1,442 @@
+{
+ "j": [
+  "ロキソニンS 12錠",
+  "ナロンエースT 48錠",
+  "キャベジンコーワα 300錠",
+  "太田胃散 分包 32包",
+  "セルベール整胃プレミアム〈錠〉 36錠",
+  "ザ・ガードコーワ整腸錠α3+ 350錠",
+  "ガスター10 12錠",
+  "龍角散ダイレクト スティック ミント 16包",
+  "アレグラFX 28錠",
+  "クラリチンEX 14錠",
+  "アレジオン20 12錠",
+  "ナザール「スプレー」ポンプ 30ml",
+  "ロイヒつぼ膏 156枚",
+  "サロンパスAe 140枚",
+  "メンソレータムADクリームm 50g",
+  "ケラチナミンコーワ20%尿素配合クリーム 60g",
+  "ハイチオールCプラス2 60錠",
+  "チョコラBBプラス 60錠",
+  "アリナミンEXプラス 120錠",
+  "命の母A 252錠",
+  "Vロートプレミアム 15ml",
+  "スマイル40 プレミアム 15ml",
+  "サンテメディカル12 12ml",
+  "トランシーノII 120錠",
+  "ビオスリーHi錠 270錠",
+  "アネッサ パーフェクトUV スキンケアミルク 60ml",
+  "ビオレUV アクアリッチ ウォータリーエッセンス",
+  "スキンアクア トーンアップUVエッセンス 80g",
+  "アリィー クロノビューティ ジェルUV EX 90g",
+  "ナチュリエ スキンコンディショナー 500ml",
+  "ネイチャーコンク 薬用クリアローション 200ml",
+  "キュレル 潤浸保湿 化粧水 III とてもしっとり 150ml",
+  "肌ラボ 白潤 薬用美白化粧水 170ml",
+  "肌ラボ 極潤プレミアム ヒアルロン液 170ml",
+  "メラノCC 薬用しみ対策 美白化粧水 170ml",
+  "ファンケル マイルドクレンジングオイル 120ml",
+  "アテニア スキンクリア クレンズ オイル 175ml",
+  "カウブランド 無添加メイク落としミルク 150ml",
+  "キャンメイク マシュマロフィニッシュパウダー",
+  "ケイト リップモンスター",
+  "SK-II フェイシャル トリートメント エッセンス 230ml",
+  "イプサ ザ・タイムR アクア 200ml",
+  "SHISEIDO アルティミューン パワライジング セラム 50ml",
+  "ソフィーナiP ベースケア セラム〈土台美容液〉 90g",
+  "エリクシール リフトモイスト ローション SP II 170ml",
+  "エリクシール レチノパワー リンクルクリーム S 15g",
+  "ミノン アミノモイスト モイストチャージ ローション II もっとしっとりタイプ 150ml",
+  "マトメージュ まとめ髪スティック レギュラー",
+  "デオナチュレ ソフトストーンW",
+  "デオナチュレ 足指さらさらクリーム 30g",
+  "エージーデオ24 パウダースプレー 無香料 142g",
+  "キュレル 入浴剤 420ml",
+  "BARTH 中性重炭酸入浴剤 9錠",
+  "きき湯 カルシウム炭酸湯 360g",
+  "バブ 薬用入浴剤",
+  "クリニカ アドバンテージ ハミガキ 130g",
+  "デンターシステマ ハブラシ レギュラー",
+  "キレイキレイ 薬用泡ハンドソープ 本体 250ml",
+  "シルコット 99.99%除菌 ウェットティッシュ 本体 40枚",
+  "アリエール ジェルボール4D 本体 11個",
+  "レノアハピネス アロマジュエル ザクロブーケの香り 本体 470ml",
+  "ビオレu ザ ボディ 泡タイプ ピュアリーサボンの香り 本体 540ml"
+ ],
+ "k": [
+  "ロキソニンS 12錠",
+  "キャベジンコーワα 300錠",
+  "太田胃散 分包 32包",
+  "サロンパスAe 140枚",
+  "ロイヒつぼ膏 156枚",
+  "休足時間 18枚",
+  "アイボン 500ml",
+  "サンテFXネオ 12ml",
+  "Vロートプレミアム 15ml",
+  "ロートリセb 8ml",
+  "龍角散ダイレクト スティック ミント 16包",
+  "ハイチオールCプラス2 60錠",
+  "ペアアクネクリームW 24g",
+  "チョコラBBプラス 60錠",
+  "ヘパリーゼW 100ml",
+  "命の母A 252錠",
+  "肌ラボ 極潤 ヒアルロン液 170ml",
+  "肌ラボ 白潤 薬用美白化粧水 170ml",
+  "メラノCC 薬用しみ集中対策 プレミアム美容液",
+  "メラノCC ディープクリア酵素洗顔 130g",
+  "ビオレUV アクアリッチ ウォータリーエッセンス",
+  "アネッサ パーフェクトUV スキンケアミルク 60ml",
+  "スキンアクア トーンアップUVエッセンス 80g",
+  "クオリティファースト ダーマレーザー スーパーVC100 マスク",
+  "毛穴撫子 お米のマスク 10枚",
+  "なめらか本舗 リンクルアイクリーム N",
+  "SENKA パーフェクトホイップ 120g",
+  "ルルルン プレシャス GREEN 32枚",
+  "ロゼット洗顔パスタ 海泥スムース 120g",
+  "ヒロインメイク ロング&カールマスカラ アドバンストフィルム",
+  "マジョリカ マジョルカ ラッシュエキスパンダー ロングロングロング EX",
+  "キャンメイク マシュマロフィニッシュパウダー",
+  "キャンメイク クリームチーク",
+  "DHC 薬用リップクリーム",
+  "メンソレータム メルティクリームリップ",
+  "資生堂 アイラッシュカーラー 213",
+  "めぐりズム 蒸気でホットアイマスク 12枚",
+  "ホッカイロ 貼る レギュラー 10個",
+  "ビオレ さらさらパウダーシート",
+  "アパガード プレミオ",
+  "ペリカン石鹸 恋するおしり ヒップケアソープ 80g",
+  "健栄製薬 ハッカ油スプレー 10ml",
+  "Ora2 me ステインクリア ペースト 130g",
+  "シルコット うるうるコットン スポンジ仕立て 40枚"
+ ],
+ "new": [
+  {
+   "cat": "med",
+   "ko": "소프트 산티아 인공눈물",
+   "ja": "ソフトサンティア (5mL×4本)",
+   "where": "드럭스토어",
+   "price": 600,
+   "img": "https://netshop.create-sd.co.jp/img/goods/L/4987084416902.jpg",
+   "thumb": "https://ts2.mm.bing.net/th?id=OIP.CoAvJX3SHuiLuDtOKHtyXwAAAA&pid=15.1",
+   "src": [
+    "https://kakaku.com/medicine/eye-medicine/ranking_7544/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "바파린 루나 i 생리통·두통약",
+   "ja": "バファリンルナi (40錠)",
+   "where": "드럭스토어",
+   "price": 1300,
+   "img": "https://doc.lion.co.jp/uploads/grn/product/normal_image/190/BufferinLunai.png",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.cGpzsj59d6oJ2lPidSYmmwHaHa&pid=15.1",
+   "src": [
+    "https://lohaco.yahoo.co.jp/ranking/50816/50831/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "카로날 A 해열진통제(아세트아미노펜)",
+   "ja": "カロナールA (24錠)",
+   "where": "드럭스토어",
+   "price": 1100,
+   "img": "https://image.rakuten.co.jp/kenkocom/cabinet/z122/z4987107634122-3.jpg",
+   "thumb": "https://ts1.mm.bing.net/th?id=OIP.cf3lNfn_AqHRB_8O4jiwkgHaRF&pid=15.1",
+   "src": [
+    "https://kakaku.com/medicine/pain-killer/ranking_7535/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "페락 T정 인후통약",
+   "ja": "ペラックT錠 (36錠)",
+   "where": "드럭스토어",
+   "price": 1500,
+   "img": "https://shop.r10s.jp/adachitaiyodo/cabinet/1712559515932.jpg",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.JgH9FCLm-QcfkzfAl9DC5wHaHa&pid=15.1",
+   "src": [
+    "https://kakaku.com/medicine/mouth-medicine/ranking_7562/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "산화마그네슘 E 변비약",
+   "ja": "酸化マグネシウムE便秘薬 (90錠)",
+   "where": "드럭스토어",
+   "price": 900,
+   "img": "https://netshop.create-sd.co.jp/img/goods/L/4987286315492.jpg",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.jOoE6sNOVSuFcPG1UUWevwAAAA&pid=15.1",
+   "src": [
+    "https://kakaku.com/medicine/laxative/ranking_7537/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "가스피탄 a 가스·복부팽만 정장제",
+   "ja": "ガスピタンa (36錠)",
+   "where": "드럭스토어",
+   "price": 1500,
+   "img": "https://item-shopping.c.yimg.jp/i/n/ultramarket_4987072011256",
+   "thumb": "https://ts4.mm.bing.net/th?id=OIP.qxErFe0g7SRpNG_CZViWBAHaHa&pid=15.1",
+   "src": [
+    "https://kakaku.com/medicine/bowel-medicine/ranking_7543/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "플루코트 f 피부염 연고",
+   "ja": "フルコートf (10g)",
+   "where": "드럭스토어",
+   "price": 1300,
+   "img": "https://item-shopping.c.yimg.jp/i/l/azumiyafuu-store-2_4987128057894",
+   "thumb": "https://ts1.mm.bing.net/th?id=OIP.kybZotAYxtqn0_gYDOuPpQHaHa&pid=15.1",
+   "src": [
+    "https://kakaku.com/medicine/skin-medicine/ranking_7531/"
+   ]
+  },
+  {
+   "cat": "med",
+   "ko": "클리니카 불소 메디컬 코트 충치예방 가글",
+   "ja": "クリニカ フッ素メディカルコート (250ml)",
+   "where": "드럭스토어",
+   "price": 900,
+   "img": "https://image.rakuten.co.jp/kurasio-en/cabinet/gazo9/lion-clnkhs250-10-1.jpg",
+   "thumb": "https://ts2.mm.bing.net/th?id=OIP.msSaGDI6ta5IADqr5o0rmgHaHa&pid=15.1",
+   "warn": {
+    "level": "caution",
+    "reason": "액체·젤 100ml 초과 — 위탁수하물로"
+   },
+   "src": [
+    "https://kakaku.com/medicine/mouth-medicine/ranking_7562/"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "로지로자 멀티 파운데이션 퍼프",
+   "ja": "ロージーローザ マルチファンデパフ 2P (2個)",
+   "where": "드럭스토어",
+   "price": 638,
+   "img": "https://www.chantilly.co.jp/brand/rosyrosa/uploads/products/4901604457077/4901604457077_1.jpg",
+   "thumb": "https://ts2.mm.bing.net/th?id=OIP.AqEuy3hVBOSNYp0CY_te-AHaHa&pid=15.1",
+   "src": [
+    "https://www.fun-japan.jp/jp/articles/14333"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "앤비 블랙 스펀지",
+   "ja": "&be ブラックスポンジ (1個)",
+   "where": "드럭스토어",
+   "price": 770,
+   "img": "https://shop.r10s.jp/and-be/cabinet/08527670/11101208/10.jpg",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.KBda3u9aMnubXvZBqf_2mAHaHa&pid=15.1",
+   "src": [
+    "https://jw-webmagazine.com/?p=323637",
+    "https://ecnomikata.com/ecnews/marketing/47305/"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "d프로그램 모이스트케어 로션 EX",
+   "ja": "d プログラム モイストケア ローション EX (125ml)",
+   "where": "드럭스토어",
+   "price": 3520,
+   "img": "https://www.shiseido.co.jp/dprogram/assets/img/product/moisturing_lotion/moisturing_lotion_box.webp",
+   "thumb": "https://ts4.mm.bing.net/th?id=OIP.Yg0tq874NeUHnD-PCF9dWQHaHa&pid=15.1",
+   "warn": {
+    "level": "caution",
+    "reason": "액체·젤 100ml 초과 — 위탁수하물로"
+   },
+   "src": [
+    "https://www.istyle.co.jp/news/uploads/20260520-bc.pdf"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "룰룬 하이드라 EX 마스크",
+   "ja": "ルルルン ハイドラ EX マスク (28枚)",
+   "where": "드럭스토어",
+   "price": 2750,
+   "img": "https://imgix.cainz.com/4580794010677/product/4580794010677_01.jpg",
+   "thumb": "https://ts4.mm.bing.net/th?id=OIP.yY8PM2HK0aCUDe--8mylNwHaHa&pid=15.1",
+   "src": [
+    "https://www.fun-japan.jp/jp/articles/14333",
+    "https://lipscosme.com/articles/11734",
+    "https://www.lululun.com/shop/products/hydraexs-2310"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "디앤서 슈퍼라멜라 샴푸",
+   "ja": "THE ANSWER スーパーラメラシャンプー (400ml)",
+   "where": "드럭스토어",
+   "price": 1760,
+   "img": "https://shop.r10s.jp/kao-haircare/cabinet/11858942/theanswer/products/answer-01_250826.jpg",
+   "thumb": "https://ts2.mm.bing.net/th?id=OIP.WQpc_BNnKJNNLKDU4dJrWwHaHa&pid=15.1",
+   "warn": {
+    "level": "caution",
+    "reason": "액체·젤 100ml 초과 — 위탁수하물로"
+   },
+   "src": [
+    "https://ecnomikata.com/ecnews/marketing/47305/",
+    "https://jw-webmagazine.com/?p=323637",
+    "https://lohaco.yahoo.co.jp/ranking/58435/"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "소피나 iP 각층 트리트먼트 기초 화장액",
+   "ja": "ソフィーナ iP 角層トリートメント 基礎化粧液 (160ml)",
+   "where": "드럭스토어",
+   "price": 3300,
+   "img": "https://item-shopping.c.yimg.jp/i/n/kitabadrug-cosme_hn-4901301422941_1_d_20231129112559",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.8qZ0knqLLvgbMIsVy_kV0wHaHa&pid=15.1",
+   "warn": {
+    "level": "caution",
+    "reason": "액체·젤 100ml 초과 — 위탁수하물로"
+   },
+   "src": [
+    "https://lipscosme.com/articles/11734",
+    "https://lipscosme.com/rankings/139/brand_features/14"
+   ]
+  },
+  {
+   "cat": "beauty",
+   "ko": "캔메이크 멜로우 듀 립 에센스",
+   "ja": "キャンメイク メロウデューリップエッセンス (7g)",
+   "where": "드럭스토어",
+   "price": 880,
+   "img": "https://www.canmake.com/wp-content/uploads/2025/11/1_MellowDewLipEssence_01-1024x1024.jpg",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.q7iEE5rnmLwxCYdZJjBizwHaHa&pid=15.1",
+   "src": [
+    "https://lipscosme.com/articles/11734"
+   ]
+  },
+  {
+   "cat": "daily",
+   "ko": "데오내추레 사라사라 크림 (겨드랑이용)",
+   "ja": "デオナチュレ 薬用さらさらクリーム (45g)",
+   "where": "드럭스토어",
+   "price": 1000,
+   "img": "https://tomods-ap.com/img/goods/L/4971825016568a.jpg",
+   "thumb": "https://ts1.mm.bing.net/th?id=OIP.ZA-qrRRSqBVr9uveM2B-8QHaHa&pid=15.1",
+   "src": [
+    "https://lipscosme.com/rankings/274/brand_features/14"
+   ]
+  },
+  {
+   "cat": "daily",
+   "ko": "에이트포 롤온 데오드란트 비누향",
+   "ja": "8x4 ロールオン せっけんの香り (45ml)",
+   "where": "드럭스토어",
+   "price": 500,
+   "img": "https://www.kao-kirei.com/content/dam/sites/kao/www-kao-kirei-com/jp/ja/item/khg/8x4/25321311/GG01.jpg",
+   "thumb": "https://ts3.mm.bing.net/th?id=OIP.FHM0Arj9k9cLSgo7yb4SqQHaHa&pid=15.1",
+   "src": [
+    "https://lipscosme.com/rankings/274/brand_features/14"
+   ]
+  },
+  {
+   "cat": "daily",
+   "ko": "갸스비 아이스 데오드란트 바디페이퍼",
+   "ja": "ギャツビー アイスデオドラント ボディペーパー (30枚)",
+   "where": "드럭스토어",
+   "price": 550,
+   "img": "https://www.happiness-direct.com/img/goods/L/61124427_95fc0acf84714cb6bb79ff13cc7561d6.jpg",
+   "thumb": "https://ts1.mm.bing.net/th?id=OIP.F4OHqITT4ZWQcEX8gVEAJAHaHa&pid=15.1",
+   "src": [
+    "https://lipscosme.com/rankings/274/brand_features/14"
+   ]
+  },
+  {
+   "cat": "daily",
+   "ko": "노니오 플러스 화이트닝 치약",
+   "ja": "NONIO プラスホワイトニング ハミガキ (130g)",
+   "where": "드럭스토어",
+   "price": 400,
+   "img": "https://shop.r10s.jp/matsukiyo/cabinet/d0063/4903301309635_1.jpg",
+   "thumb": "https://ts4.mm.bing.net/th?id=OIP.Ai4FcaXVd-bUv7xt4-SbQAHaHa&pid=15.1",
+   "warn": {
+    "level": "caution",
+    "reason": "액체·젤 100ml 초과 — 위탁수하물로"
+   },
+   "src": [
+    "https://lohaco.yahoo.co.jp/ranking/58435/"
+   ]
+  },
+  {
+   "cat": "daily",
+   "ko": "슈미텍트 시린이 미백 치약 EX",
+   "ja": "シュミテクト やさしくホワイトニングEX (90g)",
+   "where": "드럭스토어",
+   "price": 700,
+   "img": "https://netshop.create-sd.co.jp/img/goods/L/4901080729613.png",
+   "thumb": "https://ts4.mm.bing.net/th?id=OIP.tLcNmsVZWhcRjV4ynVQ_ugHaET&pid=15.1",
+   "src": [
+    "https://lohaco.yahoo.co.jp/ranking/58435/"
+   ]
+  },
+  {
+   "cat": "daily",
+   "ko": "오쿠치 오렌지 1회용 가글",
+   "ja": "オクチ オクチオレンジ (5本入)",
+   "where": "드럭스토어",
+   "price": 264,
+   "img": "https://www.bitatto-japan.com/wp-content/uploads/2024/12/okuchi-orange-3.jpg",
+   "thumb": "https://ts4.mm.bing.net/th?id=OIP.05uUSNWUllZ6wnbNOsCxngHaHa&pid=15.1",
+   "src": [
+    "https://jw-webmagazine.com/?p=323637"
+   ]
+  }
+ ],
+ "evidence": {
+  "j": [
+   "https://kakaku.com/medicine/pain-killer/ranking_7535/",
+   "https://kakaku.com/medicine/digestive/ranking_7534/",
+   "https://kakaku.com/medicine/bowel-medicine/ranking_7543/",
+   "https://kakaku.com/medicine/cold-medicine/ranking_7536/",
+   "https://kakaku.com/medicine/rhinitis/ranking_7538/",
+   "https://kakaku.com/medicine/muscle-pain/ranking_7541/",
+   "https://kakaku.com/medicine/skin-medicine/ranking_7531/",
+   "https://kakaku.com/medicine/vitamin-medicine/ranking_7557/",
+   "https://kakaku.com/medicine/herbal-medicine/ranking_7545/",
+   "https://kakaku.com/medicine/eye-medicine/ranking_7544/",
+   "https://kakaku.com/medicine/laxative/ranking_7537/",
+   "https://kakaku.com/medicine/mouth-medicine/ranking_7562/",
+   "https://lohaco.yahoo.co.jp/ranking/50816/50831/",
+   "https://www.istyle.co.jp/news/uploads/20251119-bc.pdf",
+   "https://www.istyle.co.jp/news/uploads/20260520-bc.pdf",
+   "https://www.fun-japan.jp/jp/articles/14333",
+   "https://jw-webmagazine.com/?p=323637",
+   "https://ecnomikata.com/ecnews/marketing/47305/",
+   "https://event.rakuten.co.jp/beauty/bestcosme/",
+   "https://lipscosme.com/articles/11734",
+   "https://lipscosme.com/rankings/139/brand_features/14",
+   "https://lipscosme.com/rankings/150/brand_features/14",
+   "https://lipscosme.com/rankings/154/brand_features/14",
+   "https://be-story.jp/skincare/232559/",
+   "https://lipscosme.com/rankings/274/brand_features/14",
+   "https://lipscosme.com/rankings/257/brand_features/14",
+   "https://lohaco.yahoo.co.jp/ranking/58435/",
+   "https://lohaco.yahoo.co.jp/ranking/51710/"
+  ],
+  "k": [
+   "https://www.gqkorea.co.kr/2025/02/21/2025-ver-일본-여행-추천-드럭스토어템/",
+   "https://www.tripstore.kr/blog/%EC%9D%BC%EB%B3%B8-%EB%93%9C%EB%9F%AD%EC%8A%A4%ED%86%A0%EC%96%B4-%EC%B6%94%EC%B2%9C%ED%85%9C-%EC%87%BC%ED%95%91%EB%A6%AC%EC%8A%A4%ED%8A%B8-%EB%A9%B4%EC%84%B8%ED%8C%81",
+   "https://matcha-jp.com/ko/24881",
+   "https://www.waug.com/ko/magazines/962",
+   "https://www.travelmap.co.kr/board/travelinfo/view/218",
+   "https://bujadaa.com/entry/146-%EC%9D%BC%EB%B3%B8-%EB%93%9C%EB%9F%AD%EC%8A%A4%ED%86%A0%EC%96%B4-%EC%87%BC%ED%95%91%EB%A6%AC%EC%8A%A4%ED%8A%B8-%E2%80%93-%EC%9D%B8%EA%B8%B0-%ED%99%94%EC%9E%A5%ED%92%88-%EB%AA%A8%EC%9D%8C-2025-%EC%B5%9C%EC%8B%A0%ED%8C%90",
+   "https://www.harpersbazaar.co.kr/article/1892750",
+   "https://www.japankuru.com/ko/shopping/205691/",
+   "https://v.daum.net/v/zFKNGvzcFD",
+   "https://v.daum.net/v/KbybaMloxT",
+   "https://v.daum.net/v/7NHY1UYcMB",
+   "https://www.wikitree.co.kr/articles/257520",
+   "https://www.insight.co.kr/news/67569",
+   "https://www.japankuru.com/?p=72364",
+   "https://honichi.com/goods/store_categories/drug_store/ranking/",
+   "https://1secondjapan.com/product/%EC%95%84%ED%8C%8C%EA%B0%80%EB%93%9C-%EC%B9%98%EC%95%BD-%EB%AA%A8%EC%9D%8C/11508/"
+  ]
+ }
+}

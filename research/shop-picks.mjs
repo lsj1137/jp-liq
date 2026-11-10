@@ -14,8 +14,9 @@ let unknown = 0, added = 0;
 for (const f of readdirSync(dir).filter((f) => /^shop-picks-.*\.json$/.test(f))) {
   const r = JSON.parse(readFileSync(new URL(f, dir), 'utf8'));
   for (const it of r.new ?? []) {
-    if (byJa.has(it.ja)) continue;
     const { src, ...item } = it;
+    // 다시 돌리면 이미 들어간 새 제품은 내용만 갱신
+    if (byJa.has(item.ja)) { Object.assign(byJa.get(item.ja), item); mark(byJa.get(item.ja), 'j'); continue; }
     const last = data.items.findLastIndex((x) => x.cat === item.cat);
     data.items.splice(last + 1, 0, item);
     byJa.set(item.ja, item);
