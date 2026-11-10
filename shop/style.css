@@ -421,7 +421,27 @@ body:has(#cartbar:not([hidden])) footer { padding-bottom: calc(96px + env(safe-a
   cursor: pointer;
 }
 /* 창이 열릴 때 닫기 버튼에 자동으로 잡히는 포커스 테두리는 숨긴다 */
-#tips .close:focus:not(:focus-visible) { outline: none; }
+#tips .close:focus:not(:focus-visible),
+#viewer .close:focus:not(:focus-visible) { outline: none; }
+/* 상세 창 닫기: 사진 위 오른쪽에 겹쳐 두고 스크롤해도 따라온다.
+   float 를 쓰면 사진 칸(flex)이 버튼 폭만큼 좁아져서, 오른쪽 정렬 + 아래 여백을 빼서 겹친다 */
+#viewer .close {
+  position: sticky;
+  top: 10px;
+  z-index: 2;
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 10px 10px -44px auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  color: var(--sub);
+  font-size: 15px;
+  cursor: pointer;
+}
 .tips { padding: 6px 20px 20px; font-size: 14px; line-height: 1.6; }
 .tips section { padding: 16px 0; }
 .tips section + section { border-top: 1px solid #e5e8eb; }

@@ -412,7 +412,7 @@ function openViewer(it) {
   $('#viewer').showModal();
 }
 $('#viewer').addEventListener('click', async (e) => {
-  if (e.target === $('#viewer')) return $('#viewer').close();
+  if (e.target === $('#viewer') || e.target.closest('.close')) return $('#viewer').close();
   const b = e.target.closest('button[data-id]');
   if (!b) return;
   if (!(await toggleCart(state.list[+b.dataset.id]))) return;
