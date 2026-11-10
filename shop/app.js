@@ -19,12 +19,12 @@ const storeOf = (part) => (STORES.find(([, , keys]) => keys.some((k) => part.inc
 const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
 const RATE_TTL = 12 * 3600 * 1000;
 
-// 쇼핑 목록: { 일본어명: 샀는지 } — 예전 체크 목록(jp-shop-checked)은 담은 것으로 옮긴다
+// 쇼핑 목록: { 일본어명: { n: 수량, done: 샀는지 } }
+// 예전 형식({ 일본어명: 샀는지 })과 더 예전 체크 목록(jp-shop-checked)은 1개 담은 것으로 옮긴다
 function loadCart() {
   const saved = localStorage.getItem('jp-shop-cart');
-  if (saved) return JSON.parse(saved);
-  const old = JSON.parse(localStorage.getItem('jp-shop-checked') || '[]');
-  return Object.fromEntries(old.map((ja) => [ja, false]));
+  const raw = saved ? JSON.parse(saved) : Object.fromEntries(JSON.parse(localStorage.getItem('jp-shop-checked') || '[]').map((ja) => [ja, false]));
+  return Object.fromEntries(Object.entries(raw).map(([ja, v]) => [ja, typeof v === 'object' && v ? v : { n: 1, done: !!v }]));
 }
 
 const state = {
@@ -65,6 +65,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const yen = (n) => `¥${Math.round(n).toLocaleString('ja-JP')}`;
 const won = (n) => `${(Math.round(n / 100) * 100).toLocaleString('ko-KR')}원`;
 const inCart = (it) => it.ja in state.cart;
+const qty = (it) => state.cart[it.ja]?.n ?? 0;
+const isBought = (it) => !!state.cart[it.ja]?.done;
 
 // 제품 사진은 외부 이미지라 막히면 검색 썸네일 → 그래도 안 되면 분류 이모지로 바꾼다
 function pic(it, cls = 'pic') {
@@ -81,26 +83,34 @@ document.addEventListener('error', (e) => {
 }, true);
 
 const PLUS = '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>';
-const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>';
 
 // 한국 반입 금지·주의 표시 (warn: { level: 'ban' | 'caution', reason })
 const TAG = { ban: '반입금지', caution: '주의' };
 const tag = (it) => (it.warn ? `<span class="tag ${it.warn.level}">${TAG[it.warn.level]}</span>` : '');
 // J픽: 일본 현지 랭킹·어워드에서 인기, K픽: 한국 여행자 쇼핑 리스트에서 인기 (picks: ['j', 'k'])
-const PICKS = { j: 'J픽', k: 'K픽' };
-const picks = (it) => (it.picks ?? []).map((p) => `<span class="tag pick-${p}">${PICKS[p]}</span>`).join('');
+// 목록에서는 사진 위 띠로 보여 준다: 픽은 왼쪽 위 모서리, 주의는 오른쪽 아래 모서리, 반입금지는 사진을 가로지르는 긴 띠
+const PICK_LABEL = { j: 'J픽', k: 'K픽', jk: 'J·K픽' };
+function ribbons(it) {
+  const p = (it.picks ?? []).join('');
+  return (p ? `<i class="rb rb-${p}">${PICK_LABEL[p]}</i>` : '')
+    + (it.warn?.level === 'caution' ? '<i class="rb rb-caution">주의</i>' : '')
+    + (it.warn?.level === 'ban' ? '<i class="sash">반입금지</i>' : '');
+}
+
+// 담은 뒤엔 + / 수량 / − (1개에서 −를 누르면 목록에서 빠진다)
+const stepper = (it) => `<span class="qty"><button type="button" data-inc aria-label="하나 더">+</button><b>${qty(it)}</b><button type="button" data-dec aria-label="하나 빼기">−</button></span>`;
 
 function row(it) {
   return `
   <li class="row${inCart(it) ? ' in' : ''}${it.warn?.level === 'ban' ? ' banned' : ''}" data-id="${it.id}">
     <div class="head">
-      ${pic(it)}
+      <span class="thumb">${pic(it)}${ribbons(it)}</span>
       <div class="body">
-        <p class="name">${tag(it)}${picks(it)}<span>${esc(it.ko)}</span></p>
+        <p class="name"><span>${esc(it.ko)}</span></p>
         <p class="sub">${esc(it.ja)}</p>
         <p class="pp"><b>${yen(it.price)}</b><span class="krw">${won(it.price * state.rate)}</span><span class="where">${esc(it.where)}</span></p>
       </div>
-      <button type="button" class="pick" aria-label="${inCart(it) ? '목록에서 빼기' : '쇼핑 목록에 담기'}">${inCart(it) ? CHECK : PLUS}</button>
+      ${inCart(it) ? stepper(it) : `<button type="button" class="pick" aria-label="쇼핑 목록에 담기">${PLUS}</button>`}
     </div>
   </li>`;
 }
@@ -234,9 +244,10 @@ function renderCart() {
   const bar = $('#cartbar');
   bar.hidden = !items.length;
   if (!items.length) return;
-  const sum = items.reduce((n, it) => n + it.price, 0);
-  const bought = items.filter((it) => state.cart[it.ja]).length;
-  bar.querySelector('.sum').textContent = `${items.length}개 · ${yen(sum)}`;
+  const sum = items.reduce((n, it) => n + it.price * qty(it), 0);
+  const count = items.reduce((n, it) => n + qty(it), 0);
+  const bought = items.filter(isBought).length;
+  bar.querySelector('.sum').textContent = `${count}개 · ${yen(sum)}`;
   bar.querySelector('.flag').textContent = bought === items.length ? '다 샀어요' : bought ? `${bought}개 샀음` : '';
 }
 
@@ -244,9 +255,14 @@ function renderCart() {
 function toggleCart(it) {
   if (inCart(it)) delete state.cart[it.ja];
   else if (it.warn?.level === 'ban' && !confirm(`${it.ko}은(는) 한국에 가져갈 수 없는 품목이에요.\n${it.warn.reason}\n\n일본에서 쓸 용도로 담을까요?`)) return false;
-  else state.cart[it.ja] = false;
+  else state.cart[it.ja] = { n: 1, done: false };
   saveCart();
   return true;
+}
+function setQty(it, n) {
+  if (n <= 0) delete state.cart[it.ja];
+  else state.cart[it.ja].n = n;
+  saveCart();
 }
 
 // 면세 기준은 세금 제외 금액. 식품은 소비세 8%, 술·그 밖의 물건은 10%로 보고 뺀다
@@ -256,22 +272,23 @@ const exTax = (it) => it.price / ((['snack', 'kansai'].includes(it.cat) || (it.c
 
 function cartRow(it) {
   return `
-        <li class="${state.cart[it.ja] ? 'bought' : ''}" data-ja="${esc(it.ja)}">
-          <label><input type="checkbox" ${state.cart[it.ja] ? 'checked' : ''} /><span class="nm">${tag(it)}${esc(it.ko)}</span></label>
-          <span class="yen">${yen(it.price)}</span>
-          <button type="button" class="del" aria-label="빼기">✕</button>
+        <li class="${isBought(it) ? 'bought' : ''}" data-ja="${esc(it.ja)}">
+          <label><input type="checkbox" ${isBought(it) ? 'checked' : ''} /><span class="nm">${tag(it)}${esc(it.ko)}</span></label>
+          <span class="step"><button type="button" data-dec aria-label="하나 빼기">−</button><b>${qty(it)}</b><button type="button" data-inc aria-label="하나 더">+</button></span>
+          <span class="yen">${yen(it.price * qty(it))}</span>
         </li>`;
 }
 
 function openCart() {
   const items = cartItems();
   if (!items.length) return $('#cart').close();
-  const sum = items.reduce((n, it) => n + it.price, 0);
-  const done = items.filter((it) => state.cart[it.ja]).length;
+  const sum = items.reduce((n, it) => n + it.price * qty(it), 0);
+  const count = items.reduce((n, it) => n + qty(it), 0);
+  const done = items.filter(isBought).length;
   // 같은 구매처끼리 묶어서, 한 매장에서 다 산다고 할 때 면세 기준을 넘는지 보여 준다
   const groups = STORES.map(([k, label]) => [label, items.filter((it) => it._store === k)]).filter(([, list]) => list.length);
   $('#cart .content').innerHTML = `
-    <h2 tabindex="-1">쇼핑 목록 <small>${items.length}개</small></h2>
+    <h2 tabindex="-1">쇼핑 목록 <small>${count}개</small></h2>
     <div class="meter" style="--w:${(done / items.length) * 100}%">
       <p><span>산 것</span><b>${done} / ${items.length}</b></p><i></i>
     </div>
@@ -279,8 +296,8 @@ function openCart() {
       <p><span>예상 합계</span><b>${yen(sum)} · ${won(sum * state.rate)}</b></p>
     </div>
     ${groups.map(([label, list]) => {
-      const total = list.reduce((n, it) => n + it.price, 0);
-      const ex = list.reduce((n, it) => n + exTax(it), 0);
+      const total = list.reduce((n, it) => n + it.price * qty(it), 0);
+      const ex = list.reduce((n, it) => n + exTax(it) * qty(it), 0);
       const left = Math.ceil(TAX_FREE_MIN - ex);
       return `
     <section class="store">
@@ -301,7 +318,7 @@ function openCart() {
 $('#cart').addEventListener('change', (e) => {
   const li = e.target.closest('[data-ja]');
   if (!li) return;
-  state.cart[li.dataset.ja] = e.target.checked;
+  state.cart[li.dataset.ja].done = e.target.checked;
   saveCart();
   openCart();
   renderCart();
@@ -313,8 +330,9 @@ $('#cart').addEventListener('click', (e) => {
   if (act === 'clear') {
     if (!confirm('쇼핑 목록을 모두 비울까요?')) return;
     state.cart = {};
-  } else if (e.target.closest('.del')) {
-    delete state.cart[e.target.closest('[data-ja]').dataset.ja];
+  } else if (e.target.closest('[data-inc], [data-dec]')) {
+    const it = state.list.find((x) => x.ja === e.target.closest('[data-ja]').dataset.ja);
+    setQty(it, qty(it) + (e.target.closest('[data-inc]') ? 1 : -1));
   } else return;
   saveCart();
   render();
@@ -330,6 +348,7 @@ function openViewer(it) {
     <div class="info">
       <p class="ja">${esc(it.ja)}</p>
       <p class="ko">${esc(it.ko)}</p>
+      ${it.picks ? `<p class="picks">${it.picks.map((p) => `<i class="rb-${p}">${PICK_LABEL[p]}</i>${p === 'j' ? '일본 현지 랭킹·어워드에서 인기' : '한국 여행자 쇼핑 리스트에서 인기'}`).join('<br>')}</p>` : ''}
       ${it.warn ? `<p class="alert ${it.warn.level}"><b>${it.warn.level === 'ban' ? '한국에 가져갈 수 없어요' : '가져갈 때 주의'}</b>${esc(it.warn.reason)}</p>` : ''}
       <p class="ask">これはどこにありますか？<small>이거 어디에 있나요? — 점원에게 이 화면을 보여 주세요</small></p>
       <dl>
@@ -338,7 +357,7 @@ function openViewer(it) {
       </dl>
       <div class="actions">
         <a href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(it.ja)}" target="_blank" rel="noopener">사진 더 보기</a>
-        <button type="button" class="primary${inCart(it) ? ' in' : ''}" data-id="${it.id}">${inCart(it) ? '목록에서 빼기' : '쇼핑 목록에 담기'}</button>
+        <button type="button" class="primary${inCart(it) ? ' in' : ''}" data-id="${it.id}">${inCart(it) ? `목록에서 빼기 (${qty(it)}개)` : '쇼핑 목록에 담기'}</button>
       </div>
     </div>`;
   $('#viewer').showModal();
@@ -358,8 +377,9 @@ $('#list').addEventListener('click', (e) => {
   const li = e.target.closest('.row');
   if (!li) return;
   const it = state.list[+li.dataset.id];
-  if (e.target.closest('.pick')) {
-    if (!toggleCart(it)) return;
+  if (e.target.closest('.pick, [data-inc], [data-dec]')) {
+    if (e.target.closest('.pick')) { if (!toggleCart(it)) return; }
+    else setQty(it, qty(it) + (e.target.closest('[data-inc]') ? 1 : -1));
     li.outerHTML = row(it);
     renderCart();
     return;
