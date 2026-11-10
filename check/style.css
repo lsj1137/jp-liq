@@ -1,4 +1,4 @@
-.progress { height: 6px; margin: 0 16px 6px; padding: 0; border-radius: 3px; background: var(--field); overflow: hidden; }
+.progress { width: calc(100% - 32px); max-width: 608px; height: 6px; margin: 0 auto 6px; padding: 0; border-radius: 3px; background: var(--field); overflow: hidden; }
 .progress i { display: block; height: 100%; width: 0; background: var(--blue); transition: width 0.2s ease; }
 
 .group { padding: 12px 30px 6px 16px; font-size: 13px; font-weight: 600; color: var(--sub); background: var(--paper-press, #f9fafb); }
