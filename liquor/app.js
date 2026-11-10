@@ -45,7 +45,7 @@ function search(q) {
   const tokens = q.trim().split(/\s+/).map(norm).filter((t) => t && !STOP.has(t));
   if (!tokens.length) return state.list;
   const full = norm(q);
-  return state.list
+  const found = state.list
     .map((w, i) => {
       const hit = tokens.every((t) => w._hay.includes(t) || (isChosung(t) && w._cho.includes(t)));
       if (!hit) return null;
@@ -54,6 +54,27 @@ function search(q) {
     })
     .filter(Boolean)
     .sort((a, b) => b.s - a.s || a.i - b.i)
+    .map((x) => x.w);
+  return found.length ? found : fuzzy(full);
+}
+
+// 그대로는 하나도 안 걸릴 때만: '싱글몰트' 같은 흔한 말을 빼고 두 글자씩 겹치는 정도로 비슷한 이름을 찾는다 (오타·붙여쓰기)
+const GENERIC = /싱글몰트|싱글그레인|퓨어몰트|블렌디드|블랜디드|재패니즈|위스키|nv/g;
+const bigrams = (s) => new Set([...s].slice(1).map((c, i) => s[i] + c));
+function fuzzy(full) {
+  const a = bigrams(full.replace(GENERIC, ''));
+  if (a.size < 2) return [];
+  const dice = (n) => {
+    const b = bigrams(n.replace(GENERIC, ''));
+    let both = 0;
+    for (const x of b) if (a.has(x)) both++;
+    return (2 * both) / (a.size + b.size);
+  };
+  return state.list
+    .map((w) => ({ w, s: Math.max(...w._names.map(dice)) }))
+    .filter((x) => x.s >= 0.5)
+    .sort((x, y) => y.s - x.s)
+    .slice(0, 5)
     .map((x) => x.w);
 }
 

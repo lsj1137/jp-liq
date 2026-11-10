@@ -56,6 +56,8 @@ const PIN = {
   'suntory-old': ['산토리 올드', '[마감 D-2] 산토리 올드 위스키'],
   'the-nikka-tailored': ['닛카 테일러드', '닛카 테일러드 위스키'],
   'woodford-reserve': ['우드포드 리저브', '우드포드 리저브 버번 750ml'],
+  'togouchi-premium': ['토고우치 프리미엄', '[마감 D-1] 토고우치 블렌디드 프리미엄 위스키'],
+  'kirin-fuji-single-malt': ['후지 싱글몰트', '기린 싱글몰트 위스키 후지'],
   'ichiros-white': ['이치로즈 몰트', '이치로즈 몰트\u0026그레인 월드 블렌디드 위스키'],
 };
 
