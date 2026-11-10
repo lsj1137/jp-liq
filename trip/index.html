@@ -98,9 +98,35 @@
       .card img { flex: none; width: 56px; height: 56px; border-radius: 12px; }
       .card .tag { display: inline-block; font-style: normal; margin: 0 0 2px; padding: 0 6px; border-radius: 4px; background: #f6d2db; color: #a94a63; font-size: 11px; font-weight: 700; }
 
-      /* 지역 선택 카드 (누르면 지도) */
-      button.card { width: 100%; border: 0; font: inherit; text-align: left; cursor: pointer; }
-      .card .pick { display: inline; margin: 0 0 0 6px; font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 14px; font-weight: 600; color: var(--sub); }
+      /* 여행 지역 설정: 배달 앱의 주소 버튼처럼 오른쪽 위. 누르면 일본 지도 */
+      .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .loc {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex: none;
+        height: 36px;
+        margin-top: 8px;
+        padding: 0 12px 0 10px;
+        border: 1px solid #e6dccd;
+        border-radius: 18px;
+        background: var(--paper);
+        color: var(--ink);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .loc svg { width: 15px; height: 15px; }
+      .loc .caret { color: var(--sub); font-size: 11px; }
+      .loc.unset { color: var(--sub); }
+
+      /* 고른 지역의 전용 메뉴 묶음 */
+      .sec { display: flex; align-items: baseline; gap: 6px; margin: 0 2px 10px; font-family: "Gowun Batang", serif; font-size: 17px; font-weight: 700; }
+      .sec span { font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 13px; font-weight: 600; color: var(--sub); }
+      #regionSec { margin-bottom: 26px; }
+      #regionSec[hidden] { display: none; }
 
       /* 일본 지도 팝업 */
       #mapDlg {
@@ -205,6 +231,7 @@
     </svg>
 
     <main>
+      <div class="top">
       <!-- 종이학 -->
       <svg class="crane" viewBox="0 0 120 80" aria-hidden="true">
         <polygon points="62,40 96,8 72,42" fill="#f7d6de" />
@@ -215,7 +242,14 @@
         <polygon points="80,42 106,26 76,45" fill="#f2c4d0" />
         <polyline points="60,30 60,52" fill="none" stroke="#d9849a" stroke-width="0.8" opacity="0.6" />
       </svg>
+        <button type="button" class="loc" id="regionBtn" aria-label="여행 지역 바꾸기"></button>
+      </div>
       <h1>일본여행 가이드북 <span class="hanko" aria-hidden="true">旅</span></h1>
+
+      <section id="regionSec" hidden>
+        <p class="sec" id="regionTitle"></p>
+        <ul class="cards" id="regionCards"></ul>
+      </section>
 
       <ul class="cards" id="cards"></ul>
     </main>
@@ -232,8 +266,8 @@
     </dialog>
 
     <script>
-      // '지역 선택' 카드를 누르면 일본 지도가 뜨고, 지방을 누르면 그 지역 전용 메뉴가 카드 목록에 나온다.
-      // 고른 지역은 이 기기에 저장. 지도는 scripts/build-japan-map.mjs 로 만든다.
+      // 오른쪽 위 지역 버튼(설정)을 누르면 일본 지도가 뜨고, 지방을 고르면 그 지역 전용 메뉴가 위에 따로 묶여 나온다.
+      // 공통 메뉴는 지역과 관계없이 그대로. 고른 지역은 이 기기에 저장. 지도는 scripts/build-japan-map.mjs 로 만든다.
       const REGIONS = {
         hokkaido: ['홋카이도', '삿포로'],
         tohoku: ['도호쿠', '센다이'],
@@ -253,30 +287,28 @@
         { href: 'check/', title: '출입국 체크리스트', desc: '출발 전·일본 도착·귀국 때 챙길 것' },
         { href: 'money/', title: '여행 경비', desc: '엔화 지출 기록, 원화 합계' },
       ];
+      const PIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c-3.9 0-7 3-7 6.9 0 5.1 7 12.1 7 12.1s7-7 7-12.1c0-3.9-3.1-6.9-7-6.9z" fill="#c8432f"/><circle cx="12" cy="9.4" r="2.6" fill="#fffdf8"/></svg>';
       const $ = (s) => document.querySelector(s);
       const hasMenu = new Set(MENUS.map((m) => m.region).filter(Boolean));
       let region = REGIONS[localStorage.getItem('jp-region')] ? localStorage.getItem('jp-region') : null;
 
+      const card = (m) => `<li><a class="card" href="${m.href}">
+          <img src="${m.href}icon.svg" alt="" />
+          <div><strong>${m.title}</strong><span>${m.desc}</span></div>
+          <b class="go" aria-hidden="true">→</b>
+        </a></li>`;
+
       function render() {
+        const btn = $('#regionBtn');
+        btn.innerHTML = `${PIN}<span>${region ? REGIONS[region][0] : '여행 지역'}</span><i class="caret">▾</i>`;
+        btn.classList.toggle('unset', !region);
+
         const regionMenus = MENUS.filter((m) => m.region && m.region === region);
-        const pick = region
-          ? `<strong>${REGIONS[region][0]}<span class="pick">${REGIONS[region][1]}</span></strong><span>${regionMenus.length ? `지역 메뉴 ${regionMenus.length}개` : '지역 전용 메뉴 없음'}</span>`
-          : `<strong>지역 선택</strong><span>지도에서 고르기</span>`;
-        $('#cards').innerHTML =
-          `<li><button type="button" class="card" id="regionCard">
-            <img src="trip/map-icon.svg" alt="" />
-            <div>${pick}</div>
-            <b class="go" aria-hidden="true">→</b>
-          </button></li>` +
-          [...regionMenus, ...MENUS.filter((m) => !m.region)]
-            .map(
-              (m) => `<li><a class="card" href="${m.href}">
-              <img src="${m.href}icon.svg" alt="" />
-              <div>${m.region ? `<i class="tag">${REGIONS[m.region][0]}</i>` : ''}<strong>${m.title}</strong><span>${m.desc}</span></div>
-              <b class="go" aria-hidden="true">→</b>
-            </a></li>`,
-            )
-            .join('');
+        $('#regionSec').hidden = !regionMenus.length;
+        if (region) $('#regionTitle').innerHTML = `${REGIONS[region][0]}<span>${REGIONS[region][1]}</span>`;
+        $('#regionCards').innerHTML = regionMenus.map(card).join('');
+        $('#cards').innerHTML = MENUS.filter((m) => !m.region).map(card).join('');
+
         for (const g of document.querySelectorAll('.jmap .rg')) {
           g.classList.toggle('on', g.dataset.r === region);
           g.classList.toggle('has', hasMenu.has(g.dataset.r));
@@ -291,9 +323,7 @@
         $('#mapDlg').close();
       }
 
-      $('#cards').addEventListener('click', (e) => {
-        if (e.target.closest('#regionCard')) $('#mapDlg').showModal();
-      });
+      $('#regionBtn').addEventListener('click', () => $('#mapDlg').showModal());
       $('#mapDlg').addEventListener('click', (e) => {
         const g = e.target.closest('.rg');
         if (g) choose(g.dataset.r);
