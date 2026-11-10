@@ -1,4 +1,4 @@
-import whiskies from '../public/whiskies.json' with { type: 'json' };
+import whiskies from '../liquor/whiskies.json' with { type: 'json' };
 import { send, readJson } from '../lib/http.js';
 
 const CATALOG = whiskies.map((w) => `${w.id}: ${w.en}`).join('\n');

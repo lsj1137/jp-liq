@@ -1,9 +1,9 @@
 {
-  "name": "jp-liq",
+  "name": "jp-trip",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "일본 술 한국/일본 평균가 즉시 비교",
+  "description": "일본여행 가이드북: 쇼핑 필수템 + 술 가격 비교",
   "scripts": {
     "start": "node --env-file-if-exists=.env server.js"
   },

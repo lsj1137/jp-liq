@@ -1,0 +1,75 @@
+/*
+ * 일본여행 가이드북 공통 디자인 (쇼핑·술 앱이 각자 style.css 다음에 불러온다)
+ * 화지(和紙) 바탕, 쪽빛(藍)·주홍(朱) 포인트, 벚꽃 장식, 고운바탕 제목 글꼴.
+ * 색·배경·글꼴·모서리만 바꾼다. 크기·간격·배치는 건드리지 않는다(UX 유지).
+ */
+:root {
+  --washi: #f7f1e7;
+  --paper: #fffdf8;
+  --paper-press: #f8f1e6;
+  --bg: var(--washi);
+  --text: #2f2a26;
+  --sub: #7a6f66;
+  --faint: #a2968b;
+  --line: #efe6d9;
+  --field: #f3ece0;
+  --red: #c8432f; /* 주홍: 할인·초과 */
+  --blue: #3d5a80; /* 쪽빛: 버튼·선택·포커스 */
+  --blue-soft: #e8edf3;
+  --sakura: #f1b9c7;
+  --sakura-deep: #d9849a;
+}
+
+body {
+  /* 화지 결 + 아주 옅은 벚꽃잎 */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cg fill='%23f1b9c7' opacity='.28'%3E%3Cpath d='M40 52l-2-3c-6 2-8 9-4 16 2 3 4 5 6 5s4-2 6-5c4-7 2-14-4-16z' transform='rotate(-25 40 60)'/%3E%3Cpath d='M190 170l-2-3c-6 2-8 9-4 16 2 3 4 5 6 5s4-2 6-5c4-7 2-14-4-16z' transform='rotate(40 190 178) scale(.8)'/%3E%3C/g%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9 .05' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
+    var(--washi);
+  background-attachment: fixed;
+}
+::selection { background: #f6d2db; }
+
+/* 상단: 바탕과 같은 화지 */
+header { background: var(--washi); }
+#cats { border-bottom-color: #e6dccd; }
+h1,
+dialog h2 { font-family: "Gowun Batang", serif; letter-spacing: -0.02em; }
+
+/* 입력칸·선택칸·버튼 바탕: 흰색 대신 종이색 */
+.search input:focus,
+.calc input[type="number"]:focus,
+#cart .items input:focus { background: var(--paper); }
+#sort,
+#store,
+#hideBan { background-color: var(--paper); }
+
+/* 목록: 오른쪽 위 모서리를 벚꽃색으로 접은 종이 */
+#list { position: relative; background: var(--paper); border-radius: 6px; box-shadow: 0 1px 0 rgba(120, 90, 70, 0.1); }
+#list::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  background: linear-gradient(225deg, var(--washi) 50%, #f3d3db 50%, #ecc2cd);
+  pointer-events: none;
+}
+.head:active { background: var(--paper-press); }
+.bottle,
+.pic { background-color: var(--paper); }
+
+/* 팝업(장바구니·사진·팁): 종이색. 카메라는 검은 화면 그대로 */
+dialog:not(#camera),
+#viewer .photo { background-color: var(--paper); }
+.tips section + section,
+.tips .src { border-top-color: var(--line); }
+
+/* 술 앱 장바구니 버튼(원래 하늘색 고정값) */
+.add,
+.cartctl:has([data-dec]) { background: var(--blue-soft); color: var(--blue); }
+.add:active { background: #dbe3ed; }
+#cartbar .flag { color: #b9d8c2; }
+#cartbar .flag.over { color: #f3b1a6; }

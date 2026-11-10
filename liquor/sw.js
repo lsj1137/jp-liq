@@ -2,9 +2,9 @@
 // 사진 인식(/api/identify, POST)만 인터넷이 필요하다.
 // 병 사진을 같은 파일 이름으로 바꿨다면 CACHE 버전을 올려야 새 사진이 보인다.
 // 경로는 모두 sw.js 위치 기준 상대 경로 (/liquor/ 아래에 있어도 동작)
-const CACHE = 'jp-liq-v4';
+const CACHE = 'jp-liq-v5';
 const BASE = new URL('./', location).pathname;
-const SHELL = ['./', 'app.js', 'style.css', 'whiskies.json', 'manifest.webmanifest', 'icon-192.png'];
+const SHELL = ['./', 'app.js', 'style.css', 'common/theme.css', 'whiskies.json', 'manifest.webmanifest', 'icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -15,7 +15,8 @@ self.addEventListener('activate', (e) => {
     Promise.all([
       caches
         .keys()
-        .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+        // 같은 도메인의 쇼핑 앱(jp-shop-*) 캐시는 건드리지 않고, 술 앱의 옛 버전만 지운다
+        .then((keys) => Promise.all(keys.filter((k) => k.startsWith('jp-liq-') && k !== CACHE).map((k) => caches.delete(k))))
         .then(() => self.clients.claim()),
       precacheBottles(),
     ]),

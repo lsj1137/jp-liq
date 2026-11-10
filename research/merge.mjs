@@ -1,9 +1,9 @@
-// research/*.json 의 조사 결과를 public/whiskies.json 에 반영한다.
+// research/*.json 의 조사 결과를 liquor/whiskies.json 에 반영한다.
 // 사용: node research/merge.mjs
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 
 const dir = new URL('./', import.meta.url);
-const target = new URL('../public/whiskies.json', import.meta.url);
+const target = new URL('../liquor/whiskies.json', import.meta.url);
 const list = JSON.parse(readFileSync(target, 'utf8'));
 const byId = new Map(list.map((w) => [w.id, w]));
 const updated = new Date().toISOString().slice(0, 7);

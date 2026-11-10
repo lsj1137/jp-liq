@@ -1,5 +1,4 @@
 // 앱 서버. 정적 파일과 API(api/)를 함께 서빙한다. 배포 서버에서는 nginx 뒤에서 pm2로 실행.
-// jp-trip.stillim.dev 에서는 nginx가 /liquor/ 앞부분을 떼고 넘겨주고, /shop/ 과 /trip/ 은 그대로 넘겨준다.
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
@@ -13,15 +12,16 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
 const API = { '/api/identify': identify, '/api/rate': rate };
 
-// URL 앞부분 → 정적 파일 폴더 (앞에서부터 맞춘다)
-// SHOP_DIR: 일본 쇼핑 필수템(lsj1137.github.io 저장소의 jp-shop 폴더). 없으면 /shop/ 은 꺼진다.
+// URL 앞부분 → 정적 파일 폴더 (위에서부터 먼저 맞는 것)
+// nginx(jp-trip.conf)는 / 를 /trip/ 으로, /shop/ 은 그대로, /liquor/ 는 앞부분을 떼고 넘겨준다.
+// common/ 은 두 앱이 같이 쓰는 디자인(theme.css)이라 /shop/common/ 과 /common/(= /liquor/common/) 양쪽에 연결한다.
 const MOUNTS = [
-  ['/shop/', process.env.SHOP_DIR],
+  ['/shop/common/', here('./common/')],
+  ['/shop/', here('./shop/')],
   ['/trip/', here('./trip/')],
-  ['/', here('./public/')],
-]
-  .filter(([, dir]) => dir)
-  .map(([prefix, dir]) => [prefix, resolve(dir) + sep]);
+  ['/common/', here('./common/')],
+  ['/', here('./liquor/')],
+].map(([prefix, dir]) => [prefix, resolve(dir) + sep]);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -69,7 +69,6 @@ http
     }
   })
   .listen(PORT, HOST, () => {
-    console.log(`jp-liq: http://${HOST}:${PORT}`);
-    console.log(`  /shop/ ${process.env.SHOP_DIR ? `← ${process.env.SHOP_DIR}` : '(SHOP_DIR 없음 → 꺼짐)'}`);
+    console.log(`jp-trip: http://${HOST}:${PORT}  (/ 술, /shop/ 쇼핑, /trip/ 메인)`);
     if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) console.log('  (GEMINI_API_KEY / ANTHROPIC_API_KEY 없음 → 사진 인식 비활성)');
   });

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#f7f1e7"/>
+  <!-- 종이접기 쇼핑백 (메인 화면 아이콘과 같은 모양) -->
+  <g transform="translate(80 76) scale(5.5)">
+    <path d="M22 22v-4a10 10 0 0 1 20 0v4" fill="none" stroke="#c98a9b" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="12,22 32,22 30,56 10,56" fill="#f2c4d0"/>
+    <polygon points="32,22 52,22 54,56 30,56" fill="#e7a5b6"/>
+    <polygon points="12,22 32,22 22,30" fill="#f7d6de"/>
+    <circle cx="31" cy="40" r="5" fill="#c8432f"/>
+  </g>
+</svg>

@@ -1,10 +1,10 @@
-// 데일리샷 검색 결과에서 병 사진을 찾아 public/img/<id>.webp 로 저장한다.
+// 데일리샷 검색 결과에서 병 사진을 찾아 liquor/img/<id>.webp 로 저장한다.
 // 사용: node research/images.mjs [--force] [id ...]
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
-const list = JSON.parse(readFileSync(new URL('../public/whiskies.json', import.meta.url), 'utf8'));
-const out = new URL('../public/img/', import.meta.url);
+const list = JSON.parse(readFileSync(new URL('../liquor/whiskies.json', import.meta.url), 'utf8'));
+const out = new URL('../liquor/img/', import.meta.url);
 mkdirSync(out, { recursive: true });
 
 const args = process.argv.slice(2);
