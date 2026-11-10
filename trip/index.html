@@ -47,7 +47,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        margin: 0;
+        margin: 0 0 28px;
         font-family: "Gowun Batang", serif;
         font-size: 30px;
         font-weight: 700;
@@ -67,7 +67,7 @@
         transform: rotate(-6deg);
         opacity: 0.85;
       }
-      .lead { margin: 8px 0 28px; color: var(--sub); font-size: 15px; }
+
 
       /* 접힌 종이 카드: 오른쪽 위 모서리가 접혀 있다 */
       .cards { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
@@ -100,7 +100,6 @@
       .card span { display: block; margin-top: 3px; font-size: 13px; color: var(--sub); }
       .card .go { margin-left: auto; color: var(--sakura-deep); font-size: 20px; }
 
-      footer { margin-top: 26px; font-size: 12px; color: var(--sub); line-height: 1.6; }
 
       /* 오른쪽 아래 벚꽃 가지 */
       .branch { position: fixed; right: -10px; bottom: -6px; z-index: 0; width: 210px; height: auto; pointer-events: none; opacity: 0.9; }
@@ -169,7 +168,6 @@
         <polyline points="60,30 60,52" fill="none" stroke="#d9849a" stroke-width="0.8" opacity="0.6" />
       </svg>
       <h1>일본여행 가이드북 <span class="hanko" aria-hidden="true">旅</span></h1>
-      <p class="lead">뭘 살지, 얼마면 싼지 한 권에 담았어요.</p>
 
       <ul class="cards">
         <li>
@@ -203,7 +201,6 @@
         </li>
       </ul>
 
-      <footer>각각 홈 화면에 추가하면 앱처럼 쓸 수 있고, 한 번 열어두면 인터넷이 약한 곳에서도 열려요.</footer>
     </main>
   </body>
 </html>
