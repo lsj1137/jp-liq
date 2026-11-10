@@ -37,17 +37,35 @@ header > * { max-width: 640px; margin-left: auto; margin-right: auto; padding-le
 h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.03em; }
 .titlebar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 #tipsBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex: none;
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 99px;
-  background: var(--blue-soft);
-  color: var(--blue);
+  height: 34px;
+  padding: 0 11px 0 7px;
+  border: 1px solid #e6dccd;
+  border-radius: 10px;
+  background: var(--paper, #fff);
+  color: var(--text);
   font: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
+}
+/* 도장처럼 생긴 작은 주홍 네모 */
+#tipsBtn .seal {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--red);
+  color: #fffdf8;
+  font-family: "Gowun Batang", serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  transform: rotate(-6deg);
 }
 #tipsBtn:active { transform: scale(0.96); }
 
@@ -376,10 +394,10 @@ body:has(#cartbar:not([hidden])) footer { padding-bottom: calc(96px + env(safe-a
   padding: 0;
   border: 0;
   border-radius: 20px;
-  background: #fff;
+  background: var(--paper, #fff);
   outline: none;
 }
-#tips::backdrop { background: rgba(0, 0, 0, 0.45); }
+#tips::backdrop { background: rgba(47, 42, 38, 0.45); }
 #tips .close {
   position: sticky;
   top: 10px;
@@ -400,14 +418,16 @@ body:has(#cartbar:not([hidden])) footer { padding-bottom: calc(96px + env(safe-a
 .tips { padding: 6px 20px 20px; font-size: 14px; line-height: 1.6; }
 .tips section { padding: 16px 0; }
 .tips section + section { border-top: 1px solid #e5e8eb; }
-.tips h2 { margin: 0 0 8px; font-size: 18px; letter-spacing: -0.02em; }
-.tips h2 small { margin-left: 4px; font-size: 13px; font-weight: 500; color: var(--sub); }
+.tips h2 { margin: 0 0 8px; font-family: "Gowun Batang", serif; font-size: 19px; letter-spacing: -0.02em; }
+.tips h2 small { margin-left: 4px; font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 13px; font-weight: 500; color: var(--sub); }
 .tips .lead { color: var(--text); }
 .tips ol, .tips ul { margin: 8px 0 0; padding-left: 20px; }
 .tips li + li { margin-top: 6px; }
-.tips .callout { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: #ffeceb; color: #8a1c22; }
+.tips .callout { margin-top: 14px; padding: 12px 14px 12px 15px; border-left: 3px solid var(--red); border-radius: 0 10px 10px 0; background: var(--paper-press, #f8f1e6); color: var(--text); }
+.tips .callout > p b { color: var(--red); }
 .tips .callout ul { margin-top: 4px; }
-.tips .tip { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--blue-soft); color: #1b4fa0; }
+.tips .tip { margin-top: 12px; padding: 12px 14px 12px 15px; border-left: 3px solid var(--blue); border-radius: 0 10px 10px 0; background: var(--paper-press, #f8f1e6); color: var(--text); }
+.tips .tip > b:first-child { margin-right: 8px; color: var(--blue); }
 .tips table { width: 100%; margin-top: 4px; border-collapse: collapse; }
 .tips th, .tips td { padding: 9px 0; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 .tips th { width: 64px; color: var(--sub); font-weight: 500; }
