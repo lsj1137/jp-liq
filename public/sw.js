@@ -1,8 +1,10 @@
 // 지하 매장처럼 인터넷이 약한 곳에서도 목록·가격·병 사진이 열리게 캐시한다.
 // 사진 인식(/api/identify, POST)만 인터넷이 필요하다.
 // 병 사진을 같은 파일 이름으로 바꿨다면 CACHE 버전을 올려야 새 사진이 보인다.
-const CACHE = 'jp-liq-v3';
-const SHELL = ['/', '/app.js', '/style.css', '/whiskies.json', '/manifest.webmanifest', '/icon-192.png'];
+// 경로는 모두 sw.js 위치 기준 상대 경로 (/liquor/ 아래에 있어도 동작)
+const CACHE = 'jp-liq-v4';
+const BASE = new URL('./', location).pathname;
+const SHELL = ['./', 'app.js', 'style.css', 'whiskies.json', 'manifest.webmanifest', 'icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -24,9 +26,9 @@ self.addEventListener('activate', (e) => {
 async function precacheBottles() {
   try {
     const cache = await caches.open(CACHE);
-    const list = await (await fetch('/whiskies.json')).json();
+    const list = await (await fetch('whiskies.json')).json();
     for (const w of list) {
-      const url = `/img/${w.id}.webp`;
+      const url = `img/${w.id}.webp`;
       if (await cache.match(url)) continue;
       const res = await fetch(url).catch(() => null);
       if (res?.ok) await cache.put(url, res);
@@ -41,9 +43,9 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   // 병 사진과 글꼴은 거의 안 바뀌니 캐시 우선
-  if (url.pathname.startsWith('/img/') || url.hostname === 'cdn.jsdelivr.net') {
+  if (url.pathname.startsWith(`${BASE}img/`) || url.hostname === 'cdn.jsdelivr.net') {
     e.respondWith(cacheFirst(req));
-  } else if (url.origin === location.origin) {
+  } else if (url.origin === location.origin && url.pathname.startsWith(BASE)) {
     e.respondWith(networkFirst(req));
   }
 });
@@ -68,6 +70,6 @@ async function networkFirst(req) {
     });
     return await (hit ? Promise.race([net, new Promise((_, rej) => setTimeout(rej, 3000))]) : net);
   } catch {
-    return hit ?? (await cache.match('/')) ?? Response.error();
+    return hit ?? (await cache.match('./')) ?? Response.error();
   }
 }

@@ -158,7 +158,7 @@ function renderRate() {
 
 async function loadRate() {
   try {
-    const d = await (await fetch('/api/rate')).json();
+    const d = await (await fetch('api/rate')).json();
     state.rate = d.krwPerJpy;
     state.usd = d.usdPerJpy ?? state.usd;
     state.rateNote = d.live ? `실시간 · ${new Date(d.updated).toLocaleDateString('ko-KR')}` : '기본값';
@@ -191,7 +191,7 @@ async function identify(source) {
   cam.classList.add('busy');
   setStatus('라벨 읽는 중…');
   try {
-    const r = await fetch('/api/identify', {
+    const r = await fetch('api/identify', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ image: await toDataUrl(source) }),
@@ -507,4 +507,5 @@ $('#cart').addEventListener('keydown', (e) => {
 renderCart();
 
 // 오프라인에서도 열리도록 서비스 워커 등록 (sw.js)
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+// 경로는 모두 상대 경로라서 도메인 루트(/)에서도, /liquor/ 아래에서도 그대로 동작한다.
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');

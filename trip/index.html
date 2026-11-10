@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f2f4f6" />
+    <meta name="robots" content="noindex" />
+    <title>일본 여행 쇼핑</title>
+    <link rel="icon" href="liquor/icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <style>
+      :root { --bg: #f2f4f6; --text: #191f28; --sub: #6b7684; --line: #f2f4f6; color-scheme: light; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.45 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        letter-spacing: -0.01em;
+        -webkit-font-smoothing: antialiased;
+      }
+      main { max-width: 520px; margin: 0 auto; padding: calc(40px + env(safe-area-inset-top)) 16px 32px; }
+      h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -0.03em; }
+      .lead { margin: 0 0 24px; color: var(--sub); }
+      ul { list-style: none; margin: 0; padding: 0; background: #fff; border-radius: 16px; overflow: hidden; }
+      li + li a { border-top: 1px solid var(--line); }
+      a { display: flex; align-items: center; gap: 16px; padding: 18px 16px; color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+      a:active { background: #f9fafb; }
+      img { width: 56px; height: 56px; border-radius: 14px; flex: none; }
+      strong { display: block; font-size: 17px; font-weight: 600; }
+      span { display: block; margin-top: 2px; font-size: 13px; color: var(--sub); }
+      .go { margin-left: auto; color: #b0b8c1; font-size: 20px; }
+      footer { margin-top: 20px; font-size: 12px; color: #8b95a1; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>일본 여행 쇼핑</h1>
+      <p class="lead">뭘 살지, 얼마면 싼지 한 번에.</p>
+      <ul>
+        <li>
+          <a href="shop/">
+            <img src="shop/icon-192.png" alt="" />
+            <div><strong>쇼핑 필수템</strong><span>의약품·화장품·과자·생활용품, 면세·반입 팁</span></div>
+            <b class="go" aria-hidden="true">›</b>
+          </a>
+        </li>
+        <li>
+          <a href="liquor/">
+            <img src="liquor/icon-192.png" alt="" />
+            <div><strong>술 가격 비교</strong><span>위스키·사케·소주·와인 한국가 vs 일본가, 면세 장바구니</span></div>
+            <b class="go" aria-hidden="true">›</b>
+          </a>
+        </li>
+      </ul>
+      <footer>각각 홈 화면에 추가하면 앱처럼 쓸 수 있고, 한 번 열면 인터넷이 약한 곳에서도 열립니다.</footer>
+    </main>
+  </body>
+</html>

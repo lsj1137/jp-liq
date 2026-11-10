@@ -19,24 +19,33 @@ npm start              # http://localhost:3000
 
 의존성 없음 (Node 22+).
 
-## 배포 (https://jp-liq.stillim.dev)
+## 배포 (https://jp-trip.stillim.dev)
 
-서버 `myserver-deployjun`(~/.ssh/config)에서 pm2 + nginx로 운영.
+서버 `myserver-deployjun`(~/.ssh/config)에서 pm2 + nginx로 운영. 한 Node 서버가 세 경로를 모두 서빙한다.
+
+| 주소 | 내용 | 파일 |
+|---|---|---|
+| `/` | 메인(쇼핑·술 선택) | 이 저장소 `trip/` (nginx가 `/trip/`으로 넘김) |
+| `/shop/` | 일본 쇼핑 필수템 | [lsj1137.github.io](https://github.com/lsj1137/lsj1137.github.io) 저장소의 `jp-shop/` (`SHOP_DIR`) |
+| `/liquor/` | 술 가격 비교 (이 앱) | 이 저장소 `public/` + `api/` (nginx가 `/liquor` 앞부분을 떼고 넘김) |
+
+`jp-liq.stillim.dev`는 `jp-trip.stillim.dev/liquor/`로 301 이동.
 
 | 항목 | 값 |
 |---|---|
-| 앱 위치 | `~/projects/jp-liq` |
+| 앱 위치 | `~/projects/jp-liq`, `~/projects/lsj1137.github.io` (둘 다 GitHub 저장소 checkout) |
 | 프로세스 | pm2 `jp-liq` (127.0.0.1:3240, 재부팅 시 자동 시작) |
-| 환경변수 | 서버의 `~/projects/jp-liq/.env` (`PORT`, `HOST`, `GEMINI_API_KEY`) |
-| nginx | `/etc/nginx/sites-available/jp-liq.conf` |
+| 환경변수 | 서버의 `~/projects/jp-liq/.env` (`PORT`, `HOST`, `GEMINI_API_KEY`, `SHOP_DIR`) |
+| nginx | `/etc/nginx/sites-available/jp-trip.conf`, `jp-liq.conf`(이동용) |
 
-코드: https://github.com/lsj1137/jp-liq (서버 폴더도 이 저장소를 받아온 것)
+프런트엔드 경로는 모두 상대 경로라서 도메인 루트에서도 `/liquor/` 아래에서도 동작한다.
+로컬에서 `/shop/`까지 띄우려면 `.env`에 `SHOP_DIR=../lsj1137.github.io/jp-shop`.
 
-코드나 가격 데이터를 바꾼 뒤 업데이트:
+코드나 가격 데이터를 바꾼 뒤 업데이트 (jp-shop만 바꿨을 때도 그쪽 push 후 같은 명령):
 
 ```bash
 git commit -am "..." && git push
-./deploy.sh        # 서버에서 git pull + pm2 restart
+./deploy.sh        # 서버에서 두 저장소 git pull + pm2 restart
 ```
 
 API 키를 바꿀 때는 서버에서 `.env` 수정 후 `pm2 restart jp-liq --update-env`.
