@@ -26,6 +26,11 @@
         --sakura: #f1b9c7;
         --sakura-deep: #d9849a;
         --shu: #c8432f; /* 도장 주홍 */
+        /* common/ui.js(확인 창·알림)가 쓰는 이름 */
+        --text: var(--ink);
+        --red: var(--shu);
+        --blue: #3d5a80;
+        --field: #f3ece0;
         color-scheme: light;
       }
       * { box-sizing: border-box; }
@@ -79,7 +84,8 @@
 
       /* 여행 종료: 맨 아래 작은 글자 버튼 */
       .end { margin-top: 36px; text-align: center; }
-      .end button { padding: 8px 12px; border: 0; background: none; color: var(--sub); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+      .end span { color: #d5c9bb; }
+      .end button { padding: 8px 10px; border: 0; background: none; color: var(--sub); font: inherit; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
       .card {
         position: relative;
         display: flex;
@@ -260,7 +266,8 @@
 
       <ul class="cards" id="cards"></ul>
 
-      <p class="end"><button type="button" id="endTrip">여행 종료 · 기록 지우기</button></p>
+      <p class="end"><button type="button" id="exportBtn">기록 내보내기</button><span aria-hidden="true">·</span><button type="button" id="endTrip">여행 종료</button></p>
+      <input type="file" id="importFile" accept=".json,application/json" hidden />
     </main>
 
     <dialog id="mapDlg">
@@ -333,13 +340,126 @@
 
       $('#regionBtn').addEventListener('click', () => $('#mapDlg').showModal());
 
-      // 여행 종료: 이번 여행 기록만 지운다. 지역·정렬·환율·간사이 즐겨찾기 같은 설정은 남긴다.
+      // 이번 여행 기록(설정 제외). 여행 종료는 이것만 지우고, 내보내기·불러오기도 이것만 다룬다.
+      // 지역·정렬·환율·간사이 즐겨찾기 같은 설정은 남긴다.
       const TRIP_DATA = ['jp-check', 'jp-check-bag', 'jp-money', 'jp-shop-cart', 'jp-shop-checked', 'cart'];
-      $('#endTrip').addEventListener('click', () => {
-        if (!confirm('이번 여행 기록을 모두 지울까요?\n\n· 체크리스트 체크와 내 짐\n· 여행 경비 기록\n· 쇼핑 목록\n· 술 면세 장바구니\n\n지운 기록은 되돌릴 수 없어요.')) return;
+      const ui = () => import('./common/ui.js');
+      const read = (k, d) => JSON.parse(localStorage.getItem(k) || 'null') ?? d;
+      const yen = (n) => `¥${Math.round(n).toLocaleString('ja-JP')}`;
+      const won = (n) => `${(Math.round(n / 100) * 100).toLocaleString('ko-KR')}원`;
+      const stamp = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+      // 읽기용 기록: 경비, 산 물건, 내 짐, 체크리스트
+      async function report() {
+        const rate = Number(localStorage.getItem('krwPerJpy')) || 8.6;
+        const get = (u) => fetch(u).then((r) => r.json()).catch(() => null);
+        const [check, shop, liquor] = await Promise.all([get('check/data.json'), get('shop/data.json'), get('liquor/whiskies.json')]);
+        const out = [`일본여행 기록 (${stamp()} 내보냄)`, ''];
+
+        const money = read('jp-money', []).sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
+        const toYen = (e) => (e.cur === 'KRW' ? e.amount / rate : e.amount);
+        const total = money.reduce((a, e) => a + toYen(e), 0);
+        const cash = money.filter((e) => e.pay === 'cash').reduce((a, e) => a + toYen(e), 0);
+        const CAT = { food: '식비', shop: '쇼핑', move: '교통', stay: '숙소', tour: '관광', etc: '기타' };
+        out.push('■ 여행 경비', money.length ? `합계 ${yen(total)} (약 ${won(total * rate)}) · 현금 ${yen(cash)} · 카드 ${yen(total - cash)}` : '기록 없음');
+        let day = '';
+        for (const e of money) {
+          if (e.date !== day) out.push('', `${(day = e.date).replaceAll('-', '.')}`);
+          out.push(`  ${e.cur === 'KRW' ? won(e.amount) : yen(e.amount)}  ${CAT[e.cat] ?? ''} · ${e.pay === 'cash' ? '현금' : '카드'}${e.memo ? ` · ${e.memo}` : ''}`);
+        }
+
+        const cart = read('jp-shop-cart', {});
+        const shopName = new Map((shop?.items ?? []).map((it) => [it.ja, it]));
+        const shopLines = Object.entries(cart).map(([ja, v]) => {
+          const it = shopName.get(ja);
+          const n = typeof v === 'object' && v ? v.n : 1;
+          return `  ${it?.ko ?? ja}${n > 1 ? ` ×${n}` : ''}${it ? ` (참고가 ${yen(it.price * n)})` : ''}${v?.paid ? ' · 결제함' : v?.done || v === true ? ' · 산 것' : ''}`;
+        });
+        const bottles = new Map();
+        for (const c of read('cart', [])) {
+          const b = bottles.get(c.id) ?? { n: 0, yen: 0, settled: true };
+          bottles.set(c.id, { n: b.n + 1, yen: b.yen + c.paid, settled: b.settled && !!c.settled });
+        }
+        const liqName = new Map((liquor ?? []).map((w) => [w.id, w.ko]));
+        const liqLines = [...bottles].map(([id, b]) => `  ${liqName.get(id) ?? id}${b.n > 1 ? ` ×${b.n}` : ''} (${yen(b.yen)})${b.settled ? ' · 결제함' : ''}`);
+        out.push('', '■ 쇼핑 목록', ...(shopLines.length ? shopLines : ['  없음']), '', '■ 술 면세 장바구니', ...(liqLines.length ? liqLines : ['  없음']));
+
+        const bag = read('jp-check-bag', { items: [] }).items;
+        const mark = (v) => (v ? '[v]' : '[ ]');
+        out.push('', '■ 내 짐 (갈 때 / 올 때)', ...(bag.length ? bag.map((it) => `  ${it.src ? '   ' : mark(it.go)} ${mark(it.back)}  ${it.name}${it.src ? ' (일본에서 산 것)' : ''}`) : ['  없음']));
+
+        const done = new Set(read('jp-check', []));
+        const items = check?.items ?? [];
+        const left = items.filter((it) => !done.has(it.id));
+        out.push('', `■ 출입국 체크리스트 ${items.length - left.length} / ${items.length} 완료`, ...left.map((it) => `  [ ] ${it.title}`));
+        return out.join('\n') + '\n';
+      }
+
+      // 폰에서는 공유 창(카톡·파일 앱 등으로 보내기), 컴퓨터에서는 바로 내려받기
+      async function saveFile(name, text, type) {
+        const file = new File([text], name, { type });
+        if (matchMedia('(pointer: coarse)').matches && navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: name });
+            return true;
+          } catch (e) {
+            if (e.name === 'AbortError') return false;
+          }
+        }
+        const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(file), download: name });
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        return true;
+      }
+
+      $('#exportBtn').addEventListener('click', async () => {
+        const { ask, toast } = await ui();
+        const r = await ask({
+          title: '기록 내보내기',
+          body: '읽기용 텍스트는 경비·산 물건·짐·체크리스트를 한 파일로 정리해요. 백업 파일은 다른 폰이나 다음에 다시 불러올 수 있어요.',
+          column: true,
+          buttons: [
+            { value: 'txt', label: '읽기용 텍스트 저장', kind: 'primary' },
+            { value: 'json', label: '백업 파일 저장' },
+            { value: 'import', label: '백업 불러오기' },
+            { value: null, label: '닫기' },
+          ],
+        });
+        if (!r) return;
+        if (r.button === 'import') return $('#importFile').click();
+        const ok =
+          r.button === 'txt'
+            ? await saveFile(`일본여행-기록-${stamp()}.txt`, await report(), 'text/plain')
+            : await saveFile(`일본여행-백업-${stamp()}.json`, JSON.stringify({ app: 'jp-trip', version: 1, exported: new Date().toISOString(), data: Object.fromEntries(TRIP_DATA.filter((k) => localStorage.getItem(k) !== null).map((k) => [k, read(k)])) }, null, 1), 'application/json');
+        if (ok) toast(r.button === 'txt' ? '기록을 저장했어요' : '백업 파일을 저장했어요');
+      });
+
+      $('#importFile').addEventListener('change', async (e) => {
+        const f = e.target.files[0];
+        e.target.value = '';
+        if (!f) return;
+        const { confirmBox, toast } = await ui();
+        let backup;
+        try {
+          backup = JSON.parse(await f.text());
+        } catch {}
+        if (backup?.app !== 'jp-trip' || typeof backup.data !== 'object') return toast('일본여행 가이드북 백업 파일이 아니에요');
+        if (!(await confirmBox('백업을 불러올까요?', `${(backup.exported ?? '').slice(0, 10)} 백업이에요. 지금 이 폰의 여행 기록은 백업 내용으로 바뀌어요.`, { ok: '불러오기', danger: true }))) return;
         for (const k of TRIP_DATA) localStorage.removeItem(k);
-        $('#endTrip').textContent = '기록을 지웠어요';
-        $('#endTrip').disabled = true;
+        for (const [k, v] of Object.entries(backup.data)) if (TRIP_DATA.includes(k)) localStorage.setItem(k, JSON.stringify(v));
+        toast('백업을 불러왔어요');
+      });
+
+      $('#endTrip').addEventListener('click', async () => {
+        const { confirmBox, toast } = await ui();
+        const ok = await confirmBox(
+          '여행을 마칠까요?',
+          '이번 여행 기록을 모두 지워요.<ul><li>체크리스트 체크와 내 짐</li><li>여행 경비 기록</li><li>쇼핑 목록</li><li>술 면세 장바구니</li></ul><br>지운 기록은 되돌릴 수 없어요. 남겨 두려면 먼저 <b>기록 내보내기</b>로 저장하세요.',
+          { ok: '기록 지우기', danger: true },
+        );
+        if (!ok) return;
+        for (const k of TRIP_DATA) localStorage.removeItem(k);
+        toast('여행 기록을 지웠어요');
       });
       $('#mapDlg').addEventListener('click', (e) => {
         const g = e.target.closest('.rg');

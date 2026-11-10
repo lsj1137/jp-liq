@@ -1,3 +1,5 @@
+import { confirmBox } from './common/ui.js';
+
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const CATS = [
@@ -135,8 +137,8 @@ $('#edit form').addEventListener('submit', () => {
   save();
 });
 $('#edit [data-cancel]').addEventListener('click', () => $('#edit').close());
-$('#edit [data-del]').addEventListener('click', () => {
-  if (!confirm('이 기록을 지울까요?')) return;
+$('#edit [data-del]').addEventListener('click', async () => {
+  if (!(await confirmBox('이 기록을 지울까요?', '', { ok: '지우기', danger: true }))) return;
   state.list = state.list.filter((x) => x.id !== state.editing);
   $('#edit').close();
   save();

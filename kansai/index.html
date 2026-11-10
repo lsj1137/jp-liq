@@ -331,7 +331,7 @@ $('favOnly').onclick=()=>{state.favOnly=!state.favOnly;render();};
 $('locate').onclick=()=>map.locate({setView:true,maxZoom:15});
 let me;
 map.on('locationfound',e=>{if(me) map.removeLayer(me);me=L.circleMarker(e.latlng,{radius:8,color:'#1c7ed6',fillOpacity:.6}).addTo(map);if(isMobile()) sheet.set('peek');});
-map.on('locationerror',()=>alert('위치를 가져올 수 없습니다. 브라우저 위치 권한을 확인해 주세요.'));
+map.on('locationerror',()=>import('./common/ui.js').then(m=>m.toast('위치를 가져올 수 없어요. 브라우저 위치 권한을 확인해 주세요.')));
 
 // ---------- 모바일 바텀시트 ----------
 const sheet={

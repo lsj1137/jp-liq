@@ -1,4 +1,5 @@
 import { loadBag, saveBag as storeBag, newId } from './common/bag.js';
+import { confirmBox } from './common/ui.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -78,13 +79,13 @@ function render() {
     .join('');
 }
 
-$('#list').addEventListener('click', (e) => {
+$('#list').addEventListener('click', async (e) => {
   if (e.target.closest('a')) return;
   const mine = e.target.closest('[data-bag]');
   if (mine) {
     const it = bag.items.find((x) => x.id === mine.dataset.bag);
     if (e.target.closest('.del')) {
-      if (!confirm(`'${it.name}'을(를) 목록에서 지울까요?`)) return;
+      if (!(await confirmBox('목록에서 지울까요?', esc(it.name), { ok: '지우기', danger: true }))) return;
       bag.items = bag.items.filter((x) => x !== it);
     } else it[bag.phase] = !it[bag.phase];
     saveBag();
@@ -116,14 +117,14 @@ $('#count').addEventListener('click', (e) => {
   saveBag();
   render();
 });
-$('#reset').addEventListener('click', () => {
+$('#reset').addEventListener('click', async () => {
   if (state.group === 'mine') {
-    if (!bag.items.some((it) => it[bag.phase]) || !confirm(`${PHASES[bag.phase]} 체크를 모두 지울까요?`)) return;
+    if (!bag.items.some((it) => it[bag.phase]) || !(await confirmBox(`${PHASES[bag.phase]} 체크를 모두 지울까요?`, '', { ok: '지우기', danger: true }))) return;
     for (const it of bag.items) it[bag.phase] = false;
     saveBag();
     return render();
   }
-  if (!state.done.size || !confirm('체크한 항목을 모두 지울까요?')) return;
+  if (!state.done.size || !(await confirmBox('체크한 항목을 모두 지울까요?', '', { ok: '지우기', danger: true }))) return;
   state.done.clear();
   localStorage.removeItem(KEY);
   render();

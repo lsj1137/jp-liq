@@ -1,4 +1,6 @@
 import { addBought } from './common/bag.js';
+import { addExpense, payFields } from './common/money.js';
+import { ask, confirmBox, toast } from './common/ui.js';
 
 const $ = (s) => document.querySelector(s);
 const CATS = {
@@ -254,9 +256,9 @@ function renderCart() {
 }
 
 // 반입 금지 품목은 한 번 더 확인하고 담는다 (일본에서 쓸 용도일 수도 있어서 막지는 않는다)
-function toggleCart(it) {
+async function toggleCart(it) {
   if (inCart(it)) delete state.cart[it.ja];
-  else if (it.warn?.level === 'ban' && !confirm(`${it.ko}은(는) 한국에 가져갈 수 없는 품목이에요.\n${it.warn.reason}\n\n일본에서 쓸 용도로 담을까요?`)) return false;
+  else if (it.warn?.level === 'ban' && !(await confirmBox('한국에 가져갈 수 없는 물건이에요', `<b>${esc(it.ko)}</b><br>${esc(it.warn.reason)}<br><br>일본에서 쓸 용도로 담을까요?`, { ok: '담기' }))) return false;
   else state.cart[it.ja] = { n: 1, done: false };
   saveCart();
   return true;
@@ -307,7 +309,6 @@ function openCart() {
       <ul class="items">${list.map(cartRow).join('')}</ul>
     </section>`;
     }).join('')}
-    ${state.paid ? '<p class="note paid">체크리스트 내 짐의 올 때 목록에 넣었어요. <a href="../check/#mine">내 짐 보기</a></p>' : ''}
     ${items.some((it) => it.warn?.level === 'ban') ? `<p class="note ban">반입금지 표시가 있는 물건은 한국에 가져갈 수 없어요. 일본에서 다 쓰거나 두고 오세요.</p>` : ''}
     <p class="note">면세는 <b>같은 날 같은 매장</b>에서 세금 제외 ¥5,000 이상일 때예요. 구매처별 합계는 한 매장에서 다 산다고 가정한 값이고, 세금은 식품 8%·그 외 10%로 계산했어요. 환급받을 물건은 수하물을 부치기 전에 공항 세관 확인을 받아야 해요.</p>
     <div class="actions">
@@ -327,24 +328,37 @@ $('#cart').addEventListener('change', (e) => {
   openCart();
   renderCart();
 });
-$('#cart').addEventListener('click', (e) => {
+// 결제 완료: 아직 결제 안 한 물건 중 '산 것'으로 체크한 것(없으면 전부)을 실제 결제 금액과 함께
+// 여행 경비에 기록하고, 체크리스트 '올 때' 짐에 넣는다. 한국 반입금지 물건은 일본에서 쓰고 오는 것이라 짐에는 넣지 않는다.
+async function pay() {
+  const unpaid = cartItems().filter((it) => !state.cart[it.ja].paid);
+  // 비싼 것부터 (경비 메모에 대표 물건 이름이 오게)
+  const targets = (unpaid.some(isBought) ? unpaid.filter(isBought) : unpaid).sort((a, b) => b.price * qty(b) - a.price * qty(a));
+  if (!targets.length) return toast('이미 결제 완료한 물건들이에요');
+  const amount = targets.reduce((n, it) => n + it.price * qty(it), 0);
+  const names = targets.map((it) => (qty(it) > 1 ? `${it.ko} ×${qty(it)}` : it.ko));
+  const r = await ask({
+    title: '결제 완료',
+    body: payFields(amount, `<b>${esc(names.slice(0, 3).join(', '))}${names.length > 3 ? ` 외 ${names.length - 3}개` : ''}</b><br>여행 경비에 기록하고 올 때 챙길 짐에 넣어요. 금액은 참고가 합계라 영수증대로 고쳐 주세요.`),
+    buttons: [{ value: null, label: '취소' }, { value: 'ok', label: '결제 완료', kind: 'primary' }],
+  });
+  if (!r) return;
+  for (const it of targets) Object.assign(state.cart[it.ja], { done: true, paid: true });
+  addExpense({ amount: Number(r.amount) || amount, pay: r.pay, memo: `쇼핑: ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ''}` });
+  addBought(targets.filter((it) => it.warn?.level !== 'ban').map((it) => ({ src: `shop:${it.ja}`, name: qty(it) > 1 ? `${it.ko} ×${qty(it)}` : it.ko })));
+  saveCart();
+  renderCart();
+  openCart();
+  toast('여행 경비와 올 때 짐에 넣었어요', { link: { href: '../check/#mine', label: '내 짐 보기' } });
+}
+
+$('#cart').addEventListener('click', async (e) => {
   if (e.target === $('#cart')) return $('#cart').close();
   const act = e.target.closest('[data-act]')?.dataset.act;
   if (act === 'close') return $('#cart').close();
-  // 결제 완료: '산 것'으로 체크한 물건(없으면 목록 전체)을 산 것으로 표시하고 체크리스트 '올 때' 짐에 넣는다.
-  // 한국 반입금지 물건은 일본에서 쓰고 오는 것이라 짐에 넣지 않는다.
-  if (act === 'paid') {
-    const items = cartItems();
-    const targets = items.some(isBought) ? items.filter(isBought) : items;
-    for (const it of targets) state.cart[it.ja].done = true;
-    addBought(targets.filter((it) => it.warn?.level !== 'ban').map((it) => ({ src: `shop:${it.ja}`, name: qty(it) > 1 ? `${it.ko} ×${qty(it)}` : it.ko })));
-    state.paid = true;
-    saveCart();
-    renderCart();
-    return openCart();
-  }
+  if (act === 'paid') return pay();
   if (act === 'clear') {
-    if (!confirm('쇼핑 목록을 모두 비울까요?')) return;
+    if (!(await confirmBox('쇼핑 목록을 모두 비울까요?', '', { ok: '비우기', danger: true }))) return;
     state.cart = {};
   } else if (e.target.closest('[data-inc], [data-dec]')) {
     const it = state.list.find((x) => x.ja === e.target.closest('[data-ja]').dataset.ja);
@@ -355,10 +369,7 @@ $('#cart').addEventListener('click', (e) => {
   renderCart();
   openCart();
 });
-$('#cartbar').addEventListener('click', () => {
-  state.paid = false;
-  openCart();
-});
+$('#cartbar').addEventListener('click', openCart);
 
 // ---------- 제품 상세 ----------
 function openViewer(it) {
@@ -381,23 +392,23 @@ function openViewer(it) {
     </div>`;
   $('#viewer').showModal();
 }
-$('#viewer').addEventListener('click', (e) => {
+$('#viewer').addEventListener('click', async (e) => {
   if (e.target === $('#viewer')) return $('#viewer').close();
   const b = e.target.closest('button[data-id]');
   if (!b) return;
-  if (!toggleCart(state.list[+b.dataset.id])) return;
+  if (!(await toggleCart(state.list[+b.dataset.id]))) return;
   render();
   renderCart();
   $('#viewer').close();
 });
 
 // ---------- 목록 이벤트 ----------
-$('#list').addEventListener('click', (e) => {
+$('#list').addEventListener('click', async (e) => {
   const li = e.target.closest('.row');
   if (!li) return;
   const it = state.list[+li.dataset.id];
   if (e.target.closest('.pick, [data-inc], [data-dec]')) {
-    if (e.target.closest('.pick')) { if (!toggleCart(it)) return; }
+    if (e.target.closest('.pick')) { if (!(await toggleCart(it))) return; }
     else setQty(it, qty(it) + (e.target.closest('[data-inc]') ? 1 : -1));
     li.outerHTML = row(it);
     renderCart();

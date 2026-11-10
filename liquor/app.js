@@ -1,4 +1,6 @@
 import { addBought } from './common/bag.js';
+import { addExpense, payFields } from './common/money.js';
+import { ask, toast } from './common/ui.js';
 
 const $ = (s) => document.querySelector(s);
 const CATS = {
@@ -459,14 +461,32 @@ function renderCartSummary() {
     .forEach((li, i) => li.classList.toggle('taxed', !!tax?.taxed.includes(i)));
 }
 
-// 결제 완료: 장바구니의 술을 체크리스트 '올 때' 짐에 넣는다 (같은 술은 ×병 수로 묶음)
-function markPaid() {
-  const counts = new Map();
-  for (const c of state.cart) counts.set(c.id, (counts.get(c.id) ?? 0) + 1);
-  addBought([...counts].filter(([id]) => byId(id)).map(([id, n]) => ({ src: `liquor:${id}`, name: n > 1 ? `${byId(id).ko} ×${n}` : byId(id).ko })));
+// 결제 완료: 아직 결제 안 한 술을 실제 결제 금액과 함께 여행 경비에 기록하고, 체크리스트 '올 때' 짐에 넣는다.
+// 짐은 같은 술을 ×병 수로 묶는다 (예전에 결제한 병까지 합친 수).
+async function pay() {
+  const todo = state.cart.filter((c) => !c.settled && byId(c.id));
+  if (!todo.length) return toast('이미 결제 완료한 술이에요');
+  const amount = todo.reduce((a, c) => a + c.paid, 0);
+  const count = (list) => {
+    const m = new Map();
+    for (const c of list) m.set(c.id, (m.get(c.id) ?? 0) + 1);
+    return [...m].map(([id, n]) => ({ id, n, name: n > 1 ? `${byId(id).ko} ×${n}` : byId(id).ko }));
+  };
+  const names = count(todo).map((x) => x.name);
+  const r = await ask({
+    title: '결제 완료',
+    body: payFields(amount, `<b>${names.slice(0, 3).join(', ')}${names.length > 3 ? ` 외 ${names.length - 3}개` : ''}</b><br>여행 경비에 기록하고 올 때 챙길 짐에 넣어요.`),
+    buttons: [{ value: null, label: '취소' }, { value: 'ok', label: '결제 완료', kind: 'primary' }],
+  });
+  if (!r) return;
+  for (const c of todo) c.settled = true;
+  addExpense({ amount: Number(r.amount) || amount, pay: r.pay, memo: `술: ${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}개` : ''}` });
+  addBought(count(state.cart.filter((c) => byId(c.id))).map((x) => ({ src: `liquor:${x.id}`, name: x.name })));
+  saveCart();
+  toast('여행 경비와 올 때 짐에 넣었어요', { link: { href: '../check/#mine', label: '내 짐 보기' } });
 }
 
-function renderCartDialog(paid = false) {
+function renderCartDialog() {
   const t = cartTotals();
   // 제목에 autofocus를 줘서, 열 때 가격 입력칸이 선택돼 키보드가 뜨는 걸 막는다
   $('#cart .content').innerHTML = `
@@ -484,7 +504,6 @@ function renderCartDialog(paid = false) {
         .join('')}
     </ul>
     <p class="note">가격은 일본 면세 환급 후 금액 기준이고 직접 고칠 수 있어요. 세금은 위스키·진·리큐르 약 156%, 소주 약 177%, 사케·와인 약 68%로 계산한 추정치예요(세관은 주간 고시 환율을 써서 조금 다를 수 있어요). 영수증은 꼭 챙기세요.</p>
-    ${paid ? '<p class="note paid">체크리스트 내 짐의 올 때 목록에 넣었어요. <a href="../check/#mine">내 짐 보기</a></p>' : ''}
     <div class="actions">
       <button type="button" data-clear>비우기</button>
       <button type="button" data-close>닫기</button>
@@ -510,10 +529,7 @@ $('#cartbar').addEventListener('click', () => {
 });
 $('#cart').addEventListener('click', (e) => {
   if (e.target === $('#cart') || e.target.closest('[data-close]')) return $('#cart').close();
-  if (e.target.closest('[data-paid]')) {
-    markPaid();
-    return renderCartDialog(true);
-  }
+  if (e.target.closest('[data-paid]')) return pay();
   const del = e.target.closest('[data-del]');
   if (del) {
     const [removed] = state.cart.splice(Number(del.dataset.del), 1);

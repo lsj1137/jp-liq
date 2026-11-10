@@ -2,9 +2,9 @@
 // 사진 인식(/api/identify, POST)만 인터넷이 필요하다.
 // 병 사진을 같은 파일 이름으로 바꿨다면 CACHE 버전을 올려야 새 사진이 보인다.
 // 경로는 모두 sw.js 위치 기준 상대 경로 (/liquor/ 아래에 있어도 동작)
-const CACHE = 'jp-liq-v9';
+const CACHE = 'jp-liq-v10';
 const BASE = new URL('./', location).pathname;
-const SHELL = ['./', 'app.js', 'style.css', 'common/theme.css', 'common/bag.js', 'whiskies.json', 'manifest.webmanifest', 'icon-192.png'];
+const SHELL = ['./', 'app.js', 'style.css', 'common/theme.css', 'common/bag.js', 'common/money.js', 'common/ui.js', 'whiskies.json', 'manifest.webmanifest', 'icon-192.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
