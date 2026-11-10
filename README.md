@@ -8,7 +8,7 @@ https://jp-trip.stillim.dev — 일본 여행용 모바일 웹앱 여러 개(쇼
 | `shop/` | `/shop/` | 일본 쇼핑 필수템 853개, J픽(일본 현지 인기)·K픽(한국 여행자 인기), 면세·반입 팁, 쇼핑 목록. 픽 조사는 `research/shop-picks-*.json` → `node research/shop-picks.mjs` |
 | `liquor/` + `api/` | `/liquor/` | 일본 술 한국 평균가 vs 일본 평균가, 사진 인식, 면세 장바구니 |
 | `talk/` | `/talk/` | 보여주는 일본어 (상황별 문장, 크게 보기, 읽어주기) |
-| `check/` | `/check/` | 출입국 체크리스트 (출발 전·짐·도착·면세·귀국) |
+| `check/` | `/check/` | 출입국 체크리스트 (출발 전·짐·도착·면세·귀국), 내 짐(직접 적은 준비물을 갈 때·올 때 따로 체크) |
 | `money/` | `/money/` | 여행 경비 (엔/원 기록, 현금·카드, 원화 합계) |
 | `kansai/` | `/kansai/` | 간사이 조이패스 시설 지도 (간사이 선택 시) |
 | `common/` | `/<앱>/common/` | 공통 디자인 `theme.css`, 새 앱 뼈대 `base.css` |

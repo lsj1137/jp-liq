@@ -27,3 +27,20 @@
 .row.done .d { display: none; }
 .row.done .src { display: none; }
 .tag { display: inline-block; font-style: normal; margin-left: 6px; padding: 0 5px; border-radius: 4px; background: #fbe9e5; color: var(--red); font-size: 11px; font-weight: 700; vertical-align: 1px; }
+
+/* 내 짐 */
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--field); }
+.caption .seg button { height: 30px; padding: 0 12px; border: 0; border-radius: 8px; background: none; color: var(--sub); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.caption .seg button.on { background: var(--paper, #fff); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+.addrow form { display: flex; gap: 8px; padding: 12px 12px 12px 16px; }
+.addrow input { flex: 1; min-width: 0; height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: var(--field); color: var(--text); font: inherit; font-size: 16px; outline: none; }
+.addrow input:focus { box-shadow: inset 0 0 0 2px var(--blue); }
+.addrow button { flex: none; height: 42px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--blue); color: #fff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.addrow + .row, .addrow + .group { border-top: 1px solid var(--line); }
+.row.mine { align-items: center; }
+.row.mine .box { margin-top: 0; }
+.row.mine.done .d { display: none; }
+.row .del { flex: none; width: 32px; height: 32px; margin: -4px -6px -4px 0; border: 0; border-radius: 50%; background: none; color: var(--faint); font-size: 20px; line-height: 1; cursor: pointer; }
+.row.sug { align-items: center; }
+.row.sug .t { font-weight: 500; color: var(--sub); }
+.plus { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 2px dashed #c9bfb2; border-radius: 7px; color: var(--faint); font-size: 16px; font-weight: 700; }
