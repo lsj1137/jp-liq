@@ -141,6 +141,18 @@
 
       /* 고른 지역의 전용 메뉴: 간격은 다른 메뉴와 같고, 종이색만 아주 살짝 벚꽃빛 */
       #regionSec { margin-bottom: 14px; }
+
+      /* 홈 화면에 추가 안내: 브라우저로 열었을 때만, 메뉴 카드와 다르게 왼쪽 선만 있는 안내 줄 */
+      .install { display: flex; align-items: center; gap: 10px; margin: -6px 0 18px; padding: 11px 8px 11px 14px; border-left: 3px solid var(--blue); border-radius: 0 10px 10px 0; background: rgba(255, 253, 248, 0.75); font-size: 13.5px; line-height: 1.45; }
+      .install[hidden] { display: none; }
+      .install p { flex: 1; margin: 0; color: var(--ink); }
+      .install p small { display: block; color: var(--sub); font-size: 12.5px; }
+      .install button { flex: none; border: 0; background: none; font: inherit; cursor: pointer; }
+      .install .how { height: 34px; padding: 0 12px; border-radius: 9px; background: var(--blue); color: #fff; font-size: 13px; font-weight: 600; }
+      .install .x { width: 30px; height: 34px; color: var(--sub); font-size: 18px; line-height: 1; }
+      .steps { margin: 4px 0 0; padding-left: 20px; }
+      .steps li + li { margin-top: 8px; }
+      .ui-ask .msg svg { width: 17px; height: 17px; margin: 0 2px; vertical-align: -3px; fill: none; stroke: var(--ink); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
       #regionSec .card { background: #fdf3f1; }
       #regionSec[hidden] { display: none; }
 
@@ -261,6 +273,12 @@
         <button type="button" class="loc" id="regionBtn" aria-label="여행 지역 바꾸기"></button>
       </div>
       <h1>일본여행 가이드북 <span class="hanko" aria-hidden="true">旅</span></h1>
+
+      <div class="install" id="install" hidden>
+        <p>홈 화면에 추가해서 쓰세요<small>앱처럼 바로 열리고, 인터넷이 안 될 때도 열려요</small></p>
+        <button type="button" class="how" id="installHow">방법 보기</button>
+        <button type="button" class="x" id="installHide" aria-label="안내 닫기">×</button>
+      </div>
 
       <section id="regionSec" hidden>
         <ul class="cards" id="regionCards"></ul>
@@ -477,6 +495,54 @@
         }
       });
       render();
+
+      // ── 홈 화면에 추가 안내 ──
+      // 이미 홈 화면 앱으로 열었거나, 안내를 닫았으면 보이지 않는다.
+      const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+      const ua = navigator.userAgent;
+      const isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      const inApp = /KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(ua);
+      let installEvent = null; // 안드로이드 크롬: 버튼 하나로 바로 설치할 수 있다
+      if (!standalone && localStorage.getItem('jp-install-hide') !== '1') $('#install').hidden = false;
+      addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        installEvent = e;
+      });
+      addEventListener('appinstalled', () => ($('#install').hidden = true));
+
+      const SHARE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3M7.5 7.5 12 3l4.5 4.5M6 11H5v10h14V11h-1" /></svg>';
+      const DOTS = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" /></svg>';
+      function installSteps() {
+        if (inApp)
+          return `<p>카카오톡·네이버 같은 앱 안의 브라우저에서는 홈 화면에 추가할 수 없어요. 먼저 ${isIOS ? 'Safari' : 'Chrome'}로 열어 주세요.</p>
+            <ol class="steps"><li>오른쪽 위나 아래의 <b>···</b> 메뉴를 눌러요.</li><li><b>다른 브라우저로 열기</b>(또는 Safari로 열기)를 눌러요.</li><li>열린 화면에서 이 안내를 다시 따라 하면 돼요.</li></ol>`;
+        if (isIOS)
+          return `<ol class="steps">
+            <li>Safari 아래쪽(또는 주소창 옆)의 공유 버튼 ${SHARE}을 눌러요. 안 보이면 <b>···</b> 메뉴에서 <b>공유</b>를 눌러요.</li>
+            <li>목록을 아래로 내려 <b>홈 화면에 추가</b>를 눌러요.</li>
+            <li>오른쪽 위 <b>추가</b>를 누르면 홈 화면에 '일본여행' 아이콘이 생겨요.</li></ol>
+            <p style="margin-top:12px">Chrome에서도 주소창 옆 공유 버튼 ${SHARE}으로 똑같이 할 수 있어요.</p>`;
+        return `<ol class="steps">
+            <li>Chrome 오른쪽 위 메뉴 ${DOTS}를 눌러요.</li>
+            <li><b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 눌러요.</li>
+            <li><b>설치</b>(또는 <b>추가</b>)를 누르면 홈 화면에 '일본여행' 아이콘이 생겨요.</li></ol>
+            <p style="margin-top:12px">삼성 인터넷은 아래쪽 메뉴 <b>≡</b> → <b>현재 페이지 추가</b> → <b>홈 화면</b>이에요.</p>`;
+      }
+      $('#installHow').addEventListener('click', async () => {
+        const { ask } = await ui();
+        const buttons = installEvent && !isIOS && !inApp ? [{ value: null, label: '닫기' }, { value: 'install', label: '바로 설치', kind: 'primary' }] : [{ value: null, label: '확인', kind: 'primary' }];
+        const r = await ask({ title: '홈 화면에 추가하기', body: installSteps(), buttons });
+        if (r?.button === 'install' && installEvent) {
+          installEvent.prompt();
+          const { outcome } = await installEvent.userChoice;
+          if (outcome === 'accepted') $('#install').hidden = true;
+          installEvent = null;
+        }
+      });
+      $('#installHide').addEventListener('click', () => {
+        localStorage.setItem('jp-install-hide', '1');
+        $('#install').hidden = true;
+      });
 
       // 인터넷 없이도 메인이 열리게 (홈 화면 앱의 시작 화면)
       if ('serviceWorker' in navigator && location.pathname === '/') navigator.serviceWorker.register('/trip/sw.js', { scope: '/' });

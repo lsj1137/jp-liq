@@ -1,7 +1,7 @@
 // 메인(/)을 인터넷 없이도 열리게 한다. 홈 화면 앱이 메인에서 시작하므로 꼭 필요하다.
 // 파일은 /trip/ 에 있지만 메인 주소가 / 라서 범위를 / 로 등록한다(server.js 가 Service-Worker-Allowed 헤더를 붙임).
 // 각 메뉴 앱(/shop/ 등)은 자기 서비스 워커가 따로 있어서, 여기서는 메인이 쓰는 파일만 다루고 나머지는 건드리지 않는다.
-const CACHE = 'jp-trip-v1';
+const CACHE = 'jp-trip-v2';
 const SHELL = [
   '/',
   '/trip/icon.svg',
