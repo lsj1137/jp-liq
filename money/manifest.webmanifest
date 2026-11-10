@@ -1,0 +1,16 @@
+{
+  "name": "여행 경비",
+  "short_name": "여행 경비",
+  "description": "엔화 지출 기록과 원화 합계",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f1e7",
+  "theme_color": "#f7f1e7",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

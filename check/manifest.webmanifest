@@ -1,0 +1,16 @@
+{
+  "name": "출입국 체크리스트",
+  "short_name": "체크리스트",
+  "description": "일본 여행 출발 전·도착·귀국 체크리스트",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f1e7",
+  "theme_color": "#f7f1e7",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

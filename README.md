@@ -4,18 +4,28 @@ https://jp-trip.stillim.dev — 일본 여행 쇼핑용 모바일 웹앱 두 개
 
 | 폴더 | 주소 | 내용 |
 |---|---|---|
-| `trip/` | `/` | 메인 (쇼핑·술 선택) |
+| `trip/` | `/` | 메인. 여행 지역을 고르면 그 지역 전용 메뉴가 나옴 |
 | `shop/` | `/shop/` | 일본 쇼핑 필수템 800개, 면세·반입 팁, 쇼핑 목록 |
 | `liquor/` + `api/` | `/liquor/` | 일본 술 한국 평균가 vs 일본 평균가, 사진 인식, 면세 장바구니 |
-| `common/` | `/shop/common/`, `/liquor/common/` | 두 앱 공통 디자인 `theme.css` |
-| `research/` | — | 술 가격 조사 원본과 데이터·사진 갱신 스크립트 |
+| `talk/` | `/talk/` | 보여주는 일본어 (상황별 문장, 크게 보기, 읽어주기) |
+| `check/` | `/check/` | 출입국 체크리스트 (출발 전·짐·도착·면세·귀국) |
+| `money/` | `/money/` | 여행 경비 (엔/원 기록, 현금·카드, 원화 합계) |
+| `kansai/` | `/kansai/` | 간사이 조이패스 시설 지도 (간사이 선택 시) |
+| `common/` | `/<앱>/common/` | 공통 디자인 `theme.css`, 새 앱 뼈대 `base.css` |
+| `research/`, `scripts/` | — | 술 가격 조사·갱신 스크립트, 조이패스 시설 수집 |
 
-`shop/`은 원래 [lsj1137.github.io](https://github.com/lsj1137/lsj1137.github.io)의 `jp-shop/`(커밋 d3fc09d)에서 옮겨 왔다. GitHub Pages 배포는 내렸다.
+`shop/`(원본 커밋 d3fc09d)과 `kansai/`(ca186ae)는 [lsj1137.github.io](https://github.com/lsj1137/lsj1137.github.io)에서 옮겨 왔다. GitHub Pages 배포는 내렸다.
+
+새 메뉴를 추가할 때: 폴더를 만들고 `server.js`의 `APPS`와 `trip/index.html`의 `MENUS`에 추가한다. nginx는 고칠 필요 없다.
+
+## 간사이 조이패스 데이터
+
+GitHub Actions(`.github/workflows/kansai.yml`)가 매주 월요일 KST 05:17에 `scripts/fetch-kansai.mjs`로 시설을 다시 받아 `kansai/data.json`을 커밋한다. 서버는 crontab으로 매주 월요일 KST 06:00에 `git pull`해서 반영한다(정적 파일이라 재시작 불필요).
 
 ## 디자인
 
-메인과 두 앱이 같은 컨셉을 쓴다: 화지(和紙) 바탕, 쪽빛(藍) 버튼·선택색, 주홍(朱) 할인·경고색, 벚꽃색 접힌 종이 모서리, 제목은 고운바탕.
-두 앱은 각자 `style.css`(배치·동작) 다음에 `common/theme.css`(색·배경·글꼴)를 불러온다. 디자인만 바꿀 때는 `theme.css`만 고친다.
+모든 화면이 같은 컨셉을 쓴다: 화지(和紙) 바탕, 쪽빛(藍) 버튼·선택색, 주홍(朱) 할인·경고색, 벚꽃색 접힌 종이 모서리, 제목은 고운바탕.
+각 앱은 `style.css`(배치·동작) 다음에 `common/theme.css`(색·배경·글꼴)를 불러온다. 디자인만 바꿀 때는 `theme.css`만 고친다.
 
 ## 술 가격 비교 (`liquor/`)
 
@@ -30,8 +40,8 @@ https://jp-trip.stillim.dev — 일본 여행 쇼핑용 모바일 웹앱 두 개
 
 ## 오프라인
 
-두 앱 모두 서비스 워커로 목록·데이터를 캐시해서 인터넷이 약한 매장에서도 열린다(술 사진 인식만 온라인).
-같은 도메인이라 캐시 저장소를 같이 쓰므로, 각 서비스 워커는 자기 이름(`jp-liq-*`, `jp-shop-*`)으로 시작하는 옛 캐시만 지운다.
+모든 앱이 서비스 워커로 목록·데이터를 캐시해서 인터넷이 약한 매장에서도 열린다(술 사진 인식만 온라인).
+같은 도메인이라 캐시 저장소를 같이 쓰므로, 각 서비스 워커는 자기 이름(`jp-liq-*`, `jp-shop-*`, `jp-talk-*` …)으로 시작하는 옛 캐시만 지운다.
 앱 파일을 바꿨는데 폰에 반영이 안 되면 해당 앱 `sw.js`의 `CACHE` 버전을 올린다.
 
 ## 실행
@@ -52,7 +62,7 @@ npm start              # http://localhost:3000  → / 는 술 앱, /shop/ 쇼핑
 | 앱 위치 | `~/projects/jp-liq` (이 저장소 checkout) |
 | 프로세스 | pm2 `jp-liq` (127.0.0.1:3240, 재부팅 시 자동 시작) |
 | 환경변수 | 서버의 `~/projects/jp-liq/.env` (`PORT`, `HOST`, `GEMINI_API_KEY`) |
-| nginx | `/etc/nginx/sites-available/jp-trip.conf` — `/`→`/trip/`, `/shop/` 그대로, `/liquor/` 앞부분 떼고 전달 |
+| nginx | `/etc/nginx/sites-available/jp-trip.conf` — `/`→`/trip/`, `/liquor/` 앞부분 떼고 전달, 나머지는 그대로 전달 |
 | 예전 주소 | `jp-liq.stillim.dev` → `jp-trip.stillim.dev/liquor/` 301 (`jp-liq.conf`) |
 
 ```bash

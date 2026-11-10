@@ -58,6 +58,8 @@ dialog h2 { font-family: "Gowun Batang", serif; letter-spacing: -0.02em; }
   pointer-events: none;
 }
 .head:active { background: var(--paper-press); }
+.caption button { background: var(--paper); }
+.seg button.on { background: var(--paper); }
 .bottle,
 .pic { background-color: var(--paper); }
 

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f7f1e7" />
+    <meta name="robots" content="noindex" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="여행 경비" />
+    <title>여행 경비</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+    <link rel="stylesheet" href="common/base.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&display=swap" />
+    <link rel="stylesheet" href="common/theme.css" />
+  </head>
+  <body>
+    <header>
+      <div class="titlebar">
+        <h1>여행 경비</h1>
+      </div>
+      <div class="total">
+        <p><b id="sumYen">¥0</b> <span id="sumWon"></span></p>
+        <p id="split"></p>
+      </div>
+      <nav id="cats"></nav>
+    </header>
+
+    <main>
+      <div class="caption">
+        <p id="rate"></p>
+        <button type="button" id="addBtn">기록 추가</button>
+      </div>
+      <ul id="list"></ul>
+    </main>
+
+    <dialog id="edit">
+      <form class="content" method="dialog">
+        <h2 tabindex="-1" autofocus></h2>
+        <div class="amount">
+          <input id="amt" type="number" inputmode="numeric" enterkeyhint="done" placeholder="금액" required />
+          <div class="seg" id="cur">
+            <button type="button" data-v="JPY" class="on">엔</button><button type="button" data-v="KRW">원</button>
+          </div>
+        </div>
+        <p class="conv" id="conv"></p>
+        <p class="lb">분류</p>
+        <div class="chips" id="catChips"></div>
+        <p class="lb">결제</p>
+        <div class="seg" id="pay">
+          <button type="button" data-v="cash" class="on">현금</button><button type="button" data-v="card">카드</button>
+        </div>
+        <p class="lb">메모</p>
+        <input id="memo" type="text" maxlength="40" enterkeyhint="done" placeholder="예: 돈키호테" />
+        <p class="lb">날짜</p>
+        <input id="date" type="date" />
+        <div class="actions">
+          <button type="button" data-del hidden>삭제</button>
+          <button type="button" data-cancel>취소</button>
+          <button type="submit" class="primary" value="save">저장</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

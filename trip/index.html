@@ -70,13 +70,13 @@
 
 
       /* 접힌 종이 카드: 오른쪽 위 모서리가 접혀 있다 */
-      .cards { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+      .cards { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
       .card {
         position: relative;
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 20px 18px;
+        gap: 14px;
+        padding: 16px;
         color: inherit;
         text-decoration: none;
         background: var(--paper);
@@ -95,7 +95,27 @@
         background: linear-gradient(225deg, transparent 50%, #f3d3db 50%, #ecc2cd);
       }
       .card:active { transform: translateY(1px) scale(0.99); }
-      .card svg { flex: none; width: 58px; height: 58px; }
+      .card img { flex: none; width: 56px; height: 56px; border-radius: 12px; }
+      .card .tag { display: inline-block; font-style: normal; margin: 0 0 2px; padding: 0 6px; border-radius: 4px; background: #f6d2db; color: #a94a63; font-size: 11px; font-weight: 700; }
+
+      /* 여행 지역 선택 */
+      .region { margin: -12px 0 20px; }
+      .region p { margin: 0 0 8px; font-size: 13px; color: var(--sub); }
+      .region div { display: flex; flex-wrap: wrap; gap: 6px; }
+      .region button {
+        height: 34px;
+        padding: 0 13px;
+        border: 1px solid #e6dccd;
+        border-radius: 17px;
+        background: var(--paper);
+        color: var(--ink);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .region button.on { border-color: var(--ink); background: var(--ink); color: var(--paper); }
       .card strong { display: block; font-family: "Gowun Batang", serif; font-size: 19px; font-weight: 700; }
       .card span { display: block; margin-top: 3px; font-size: 13px; color: var(--sub); }
       .card .go { margin-left: auto; color: var(--sakura-deep); font-size: 20px; }
@@ -169,38 +189,60 @@
       </svg>
       <h1>일본여행 가이드북 <span class="hanko" aria-hidden="true">旅</span></h1>
 
-      <ul class="cards">
-        <li>
-          <a class="card" href="shop/">
-            <!-- 종이접기 쇼핑백 -->
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <path d="M22 22v-4a10 10 0 0 1 20 0v4" fill="none" stroke="#c98a9b" stroke-width="2.5" stroke-linecap="round" />
-              <polygon points="12,22 32,22 30,56 10,56" fill="#f2c4d0" />
-              <polygon points="32,22 52,22 54,56 30,56" fill="#e7a5b6" />
-              <polygon points="12,22 32,22 22,30" fill="#f7d6de" />
-              <circle cx="31" cy="40" r="5" fill="#c8432f" opacity="0.85" />
-            </svg>
-            <div><strong>쇼핑 필수템</strong><span>의약품·화장품·과자, 면세·반입 팁</span></div>
-            <b class="go" aria-hidden="true">→</b>
-          </a>
-        </li>
-        <li>
-          <a class="card" href="liquor/">
-            <!-- 종이접기 술병 -->
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <polygon points="27,6 37,6 37,18 27,18" fill="#d9a3b1" />
-              <polygon points="27,18 37,18 46,30 18,30" fill="#f2c4d0" />
-              <polygon points="18,30 32,30 32,58 20,58" fill="#ecb3c2" />
-              <polygon points="32,30 46,30 44,58 32,58" fill="#e597ab" />
-              <rect x="23" y="38" width="18" height="11" fill="#fffdf8" opacity="0.9" />
-              <text x="32" y="47" text-anchor="middle" font-size="9" font-family="serif" fill="#c8432f">酒</text>
-            </svg>
-            <div><strong>술 가격 비교</strong><span>위스키·사케·소주·와인 한국가 vs 일본가, 면세 장바구니</span></div>
-            <b class="go" aria-hidden="true">→</b>
-          </a>
-        </li>
-      </ul>
+      <div class="region">
+        <p>여행 지역</p>
+        <div id="regions"></div>
+      </div>
 
+      <ul class="cards" id="cards"></ul>
     </main>
+
+    <script>
+      // 지역을 고르면 그 지역 전용 메뉴(예: 간사이 조이패스)가 위에 나온다. 고른 지역은 이 기기에 저장.
+      const REGIONS = [
+        ['kansai', '간사이'],
+        ['kanto', '간토'],
+        ['kyushu', '규슈'],
+        ['hokkaido', '홋카이도'],
+        ['okinawa', '오키나와'],
+        ['etc', '그 외'],
+      ];
+      const MENUS = [
+        { href: 'kansai/', title: '간사이 조이패스 지도', desc: '조이패스로 쓸 수 있는 시설·혜택 지도', region: 'kansai' },
+        { href: 'shop/', title: '쇼핑 필수템', desc: '의약품·화장품·과자, 면세·반입 팁' },
+        { href: 'liquor/', title: '술 가격 비교', desc: '위스키·사케·소주·와인 한국가 vs 일본가, 면세 장바구니' },
+        { href: 'talk/', title: '보여주는 일본어', desc: '면세·식당·약국에서 보여주는 문장' },
+        { href: 'check/', title: '출입국 체크리스트', desc: '출발 전·일본 도착·귀국 때 챙길 것' },
+        { href: 'money/', title: '여행 경비', desc: '엔화 지출 기록, 원화 합계' },
+      ];
+      const regionLabel = Object.fromEntries(REGIONS);
+      let region = localStorage.getItem('jp-region');
+
+      function render() {
+        document.getElementById('regions').innerHTML = REGIONS.map(
+          ([k, l]) => `<button type="button" data-r="${k}" class="${k === region ? 'on' : ''}">${l}</button>`,
+        ).join('');
+        document.getElementById('cards').innerHTML = MENUS.filter((m) => !m.region || m.region === region)
+          .map(
+            (m) => `<li><a class="card" href="${m.href}">
+              <img src="${m.href}icon.svg" alt="" />
+              <div>${m.region ? `<i class="tag">${regionLabel[m.region]}</i>` : ''}<strong>${m.title}</strong><span>${m.desc}</span></div>
+              <b class="go" aria-hidden="true">→</b>
+            </a></li>`,
+          )
+          .join('');
+      }
+
+      document.getElementById('regions').addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        // 같은 지역을 다시 누르면 선택 해제
+        region = region === b.dataset.r ? null : b.dataset.r;
+        if (region) localStorage.setItem('jp-region', region);
+        else localStorage.removeItem('jp-region');
+        render();
+      });
+      render();
+    </script>
   </body>
 </html>

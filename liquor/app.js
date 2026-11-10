@@ -15,7 +15,7 @@ const state = {
   list: [],
   rate: Number(localStorage.getItem('krwPerJpy')) || 8.6,
   usd: Number(localStorage.getItem('usdPerJpy')) || 0.0064,
-  // 면세 장바구니: [{ id, paid }] paid는 실제 결제한(할) 엔화
+  // 면세 장바구니: [{ id, paid }] paid는 면세 환급 후 실제로 부담하는 엔화
   cart: JSON.parse(localStorage.getItem('cart') || '[]'),
   rateNote: '저장된 환율',
   open: null,
@@ -130,7 +130,7 @@ function render() {
   $('#count').textContent = `${items.length}개`;
 }
 
-// 매장 가격을 입력했으면 그 값, 아니면 일본 평균가. 면세에 체크돼 있으면 소비세 10%를 뺀다.
+// 매장 가격을 입력했으면 그 값, 아니면 일본 평균가. 면세에 체크돼 있으면 출국 때 돌려받는 소비세 10%를 뺀다.
 function paidYen(el, w) {
   const price = Number(el.querySelector('[data-calc]').value) || w.jp[1];
   return el.querySelector('[data-tax]').checked ? price / 1.1 : price;
@@ -142,7 +142,7 @@ function updateCalc(el) {
   if (!Number(el.querySelector('[data-calc]').value)) return (out.innerHTML = '');
   const paid = paidYen(el, w);
   const krw = paid * state.rate;
-  out.innerHTML = `실제 결제 ${yen(paid)} ≈ ${won(krw)}<br>${verdict(w, krw)}`;
+  out.innerHTML = `환급 후 ${yen(paid)} ≈ ${won(krw)}<br>${verdict(w, krw)}`;
 }
 
 function setStatus(text, err = false) {
@@ -453,7 +453,7 @@ function renderCartDialog() {
         )
         .join('')}
     </ul>
-    <p class="note">가격은 실제 결제액(일본 면세 적용 후) 기준이고 직접 고칠 수 있어요. 세금은 위스키·진·리큐르 약 156%, 소주 약 177%, 사케·와인 약 68%로 계산한 추정치예요(세관은 주간 고시 환율을 써서 조금 다를 수 있어요). 영수증은 꼭 챙기세요.</p>
+    <p class="note">가격은 일본 면세 환급 후 금액 기준이고 직접 고칠 수 있어요. 세금은 위스키·진·리큐르 약 156%, 소주 약 177%, 사케·와인 약 68%로 계산한 추정치예요(세관은 주간 고시 환율을 써서 조금 다를 수 있어요). 영수증은 꼭 챙기세요.</p>
     <div class="actions">
       <button type="button" data-clear>비우기</button>
       <button type="button" class="primary" data-close>닫기</button>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#f7f1e7"/><g transform="translate(80 76) scale(5.5)">
+<!-- 종이접기 지도와 핀 -->
+<polygon points="8,16 22,12 22,52 8,56" fill="#f2c4d0"/>
+<polygon points="22,12 40,16 40,56 22,52" fill="#e7a5b6"/>
+<polygon points="40,16 56,12 56,52 40,56" fill="#f2c4d0"/>
+<path d="M40 14c-6 0-10 4.5-10 10 0 7 10 18 10 18s10-11 10-18c0-5.5-4-10-10-10z" fill="#c8432f"/>
+<circle cx="40" cy="24" r="3.6" fill="#fffdf8"/>
+</g></svg>

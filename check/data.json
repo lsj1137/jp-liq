@@ -1,0 +1,41 @@
+{
+  "asof": "2026년 11월",
+  "groups": [
+    ["before", "출발 전"],
+    ["bag", "짐 싸기"],
+    ["arrive", "일본 도착"],
+    ["taxfree", "일본 면세"],
+    ["home", "귀국"]
+  ],
+  "items": [
+    { "id": "vjw", "group": "before", "title": "Visit Japan Web 등록", "desc": "입국심사·세관신고·면세 정보를 등록하면 QR 하나로 통과. 무료이고, 돈을 받는 사칭 사이트가 있으니 주의. 전날까지 끝내고 QR 화면을 캡처해 두기.", "src": "https://www.digital.go.jp/policies/visit_japan_web" },
+    { "id": "passport", "group": "before", "title": "여권 유효기간", "desc": "일본은 남은 기간 규정(6개월 등)은 없지만 체류 기간보다는 넉넉해야 함. 관광은 90일까지 무비자.", "src": "https://www.busan.kr.emb-japan.go.jp/itpr_ko/00_000518.html" },
+    { "id": "jesta", "group": "before", "title": "JESTA(일본 전자여행허가)는 아직 필요 없음", "desc": "법은 2026년 6월에 생겼지만 시행은 2028년 무렵 예정. 지금은 신청하는 곳이 있으면 사칭.", "src": "https://www.moj.go.jp/isa/01_00643.html" },
+    { "id": "deptax", "group": "before", "title": "일본 출국세 3,000엔", "new": true, "desc": "**2026년 7월 1일** 출국부터 1,000엔 → **3,000엔**. 보통 항공권 값에 포함. 6월 30일까지 산 항공권은 1,000엔(날짜 변경·오픈티켓은 3,000엔).", "src": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/inshi/7195.htm" },
+    { "id": "money", "group": "before", "title": "엔화 현금·트래블카드", "desc": "현금만 받는 가게(식당·신사·작은 가게)가 아직 있음. 동전 지갑도." },
+    { "id": "data", "group": "before", "title": "eSIM·로밍·포켓와이파이", "desc": "공항 도착하자마자 지도·QR이 필요하니 출발 전에 개통·설치." },
+    { "id": "insurance", "group": "before", "title": "여행자보험", "desc": "일본 병원비는 외국인에게 비쌈. 휴대품 도난·파손 보장도 확인." },
+
+    { "id": "battery", "group": "bag", "title": "보조배터리는 기내에, 2개까지", "new": true, "desc": "**1인 2개, 개당 160Wh 이하**만 기내 반입(위탁 수하물 금지). 기내에서 보조배터리 충전·보조배터리로 폰 충전 **전면 금지**. 단자는 테이프로 감싸고 선반 말고 몸이나 좌석 주머니에. 일본 출발편도 같은 규칙.", "src": "https://www.mlit.go.jp/report/press/kouku10_hh_000310.html" },
+    { "id": "vape", "group": "bag", "title": "전자담배·라이터", "desc": "전자담배는 기내 휴대만(위탁 금지, 기내 사용·충전 금지). 라이터나 안전성냥은 1인 1개 몸에 소지.", "src": "https://www.airport.kr/ap_ko/905/subview.do" },
+    { "id": "medicine", "group": "bag", "title": "한국 상비약 성분 확인", "desc": "**슈도에페드린 10% 초과** 약(일부 코감기약)은 일본 반입 금지. 코데인 성분은 사전 허가 필요. 일반약은 2개월분까지.", "src": "https://www.ncd.mhlw.go.jp/en/application2.html" },
+    { "id": "meat-jp", "group": "bag", "title": "육포·소시지 가져가지 않기", "desc": "한국 육포·햄·소시지 같은 육가공품은 일본 반입 금지. 걸리면 벌금이 큼.", "src": "https://www.maff.go.jp/aqs/tetuzuki/product/aq2.html" },
+    { "id": "plug", "group": "bag", "title": "돼지코(110V 어댑터)", "desc": "일본은 100V, 콘센트는 납작한 2구(A타입). 대부분 폰·노트북 충전기는 어댑터만 있으면 됨. 드라이기·고데기는 프리볼트인지 확인.", "src": "https://www.japan.travel/en/plan/plug-and-electricity/" },
+
+    { "id": "arrive-flow", "group": "arrive", "title": "입국 순서와 QR", "desc": "검역 → 입국심사(VJW QR) → 짐 찾기 → 세관(같은 QR로 전자신고 게이트). 간사이·나리타·하네다·후쿠오카 등 주요 공항에 게이트가 있음.", "src": "https://www.customs.go.jp/english/summary/passenger.htm" },
+    { "id": "jp-dutyfree", "group": "arrive", "title": "일본 입국 면세 한도", "desc": "20세 이상 술 3병(760ml 기준), 담배 200개비, 향수 2온스, 기타 20만엔까지. 넘으면 신고.", "src": "https://www.customs.go.jp/kaigairyoko/menzei.htm" },
+
+    { "id": "tf-refund", "group": "taxfree", "title": "면세는 이제 '나중에 환급'", "new": true, "desc": "**2026년 11월 1일**부터 매장에서는 **세금 포함 가격으로 결제**하고, 출국할 때 공항 세관 확인을 받은 뒤 소비세(10%)를 돌려받는 방식으로 바뀜.", "src": "https://www.nta.go.jp/publication/pamph/shohi/menzei/201805/pdf/0025003-110_01.pdf" },
+    { "id": "tf-passport", "group": "taxfree", "title": "살 때 여권 실물 지참", "desc": "입국 스탬프·스티커가 있는 여권 실물을 보여줘야 면세 처리. VJW 면세 QR은 매장에 따라 받음. 같은 매장·같은 날 **세금 빼고 5,000엔 이상**.", "src": "https://www.nta.go.jp/publication/pamph/shohi/menzei/201805/pdf/0026006-152_01.pdf" },
+    { "id": "tf-howrefund", "group": "taxfree", "title": "환급 방법 물어보기", "desc": "계좌·카드·앱·공항 현금 등 매장마다 다름. 결제할 때 어떻게 돌려받는지, 등록할 정보가 있는지 꼭 확인.", "src": "https://www.nta.go.jp/publication/pamph/shohi/menzei/201805/pdf/0026006-152_01.pdf" },
+    { "id": "tf-keep", "group": "taxfree", "title": "면세품은 뜯지 말고 영수증째 보관", "desc": "영수증 1장에 든 물건 중 하나라도 없으면 그 영수증 전체가 환급 안 됨. 과자·화장품을 먹거나 썼으면 키오스크 말고 세관 창구에 신고. 상자·포장도 그대로.", "src": "https://www.nta.go.jp/publication/pamph/shohi/menzei/201805/pdf/0026006-152_01.pdf" },
+    { "id": "tf-kiosk", "group": "taxfree", "title": "짐 부치기 전에 면세 키오스크", "desc": "출국 공항 출발 로비 키오스크에 여권을 찍기. GREEN이면 끝, RED면 검사장에서 물건 보여주기. **짐을 부친 뒤에는 확인 불가**. 구매 다음 날부터 90일 안에 출국해야 함.", "src": "https://www.nta.go.jp/publication/pamph/shohi/menzei/201805/pdf/0026006-152_01.pdf" },
+    { "id": "tf-time", "group": "taxfree", "title": "공항에 일찍 가기", "desc": "탑승수속 전까지 세관 확인을 끝내야 하고, 시간이 없어 포기하면 환급 못 받음. 주요 공항은 보안검색 전에 VJW로 온라인 확인도 가능.", "src": "https://www.nta.go.jp/publication/pamph/shohi/menzei/201805/pdf/0026006-152_01.pdf" },
+
+    { "id": "kr-dutyfree", "group": "home", "title": "한국 입국 면세 한도", "desc": "기본 **$800**. 술은 별도로 **합계 2L·$400 이하**(병 수 무관), 담배 200개비, 향수 100ml. 19세 미만은 술·담배 면세 없음.", "src": "https://customs.go.kr/kcs/cm/cntnts/cntntsView.do?mi=2837&cntntsId=829" },
+    { "id": "kr-declare", "group": "home", "title": "넘으면 '여행자 세관신고' 앱으로 자진신고", "desc": "신고할 게 없으면 신고서 안 써도 됨. 넘으면 자진신고로 관세 30% 감면(최대 20만원). 안 하고 걸리면 가산세 40%.", "src": "https://customs.go.kr/kcs/cm/cntnts/cntntsView.do?mi=2837&cntntsId=829" },
+    { "id": "kr-meat", "group": "home", "title": "고기 든 음식 가져오지 않기", "desc": "소시지·햄·육포·고기 든 만두나 컵라면도 반입 금지. 신고 안 하면 과태료 **최대 1,000만원**. 생과일·채소도 대부분 금지.", "src": "https://m.korea.kr/briefing/actuallyView.do?newsId=148860678" },
+    { "id": "kr-drug", "group": "home", "title": "일본 약은 6병(3개월분)까지", "desc": "자가사용 6병 또는 3개월 복용량까지. 코데인 계열·이소프로필안티피린 등 성분이 든 약(이브·파브론·루루 일부)은 반입 제한이라 성분표 확인.", "src": "https://www.customs.go.kr/incheon/cm/cntnts/cntntsView.do?mi=10784&cntntsId=5480" },
+    { "id": "kr-cash", "group": "home", "title": "현금 1만 달러 넘으면 신고", "desc": "미화 1만 달러(엔화·원화 합산 환산)를 넘는 현금은 반드시 신고.", "src": "https://www.customs.go.kr/incheon/cm/cntnts/cntntsView.do?mi=10784&cntntsId=5480" }
+  ]
+}

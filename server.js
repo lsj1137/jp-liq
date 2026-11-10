@@ -13,12 +13,15 @@ const HOST = process.env.HOST || '127.0.0.1';
 const API = { '/api/identify': identify, '/api/rate': rate };
 
 // URL 앞부분 → 정적 파일 폴더 (위에서부터 먼저 맞는 것)
-// nginx(jp-trip.conf)는 / 를 /trip/ 으로, /shop/ 은 그대로, /liquor/ 는 앞부분을 떼고 넘겨준다.
-// common/ 은 두 앱이 같이 쓰는 디자인(theme.css)이라 /shop/common/ 과 /common/(= /liquor/common/) 양쪽에 연결한다.
+// nginx(jp-trip.conf): / 는 /trip/ 으로, /liquor/ 는 앞부분을 떼고(→ 아래의 '/'), 나머지는 그대로 넘겨준다.
+// 새 메뉴는 폴더를 만들고 APPS 에 이름만 추가하면 된다 (nginx 수정 불필요).
+// common/ 은 모든 앱이 같이 쓰는 디자인(theme.css)이라 각 앱 아래 /<앱>/common/ 으로도 연결한다.
+const APPS = ['trip', 'shop', 'kansai', 'talk', 'check', 'money'];
 const MOUNTS = [
-  ['/shop/common/', here('./common/')],
-  ['/shop/', here('./shop/')],
-  ['/trip/', here('./trip/')],
+  ...APPS.flatMap((app) => [
+    [`/${app}/common/`, here('./common/')],
+    [`/${app}/`, here(`./${app}/`)],
+  ]),
   ['/common/', here('./common/')],
   ['/', here('./liquor/')],
 ].map(([prefix, dir]) => [prefix, resolve(dir) + sep]);
@@ -69,6 +72,6 @@ http
     }
   })
   .listen(PORT, HOST, () => {
-    console.log(`jp-trip: http://${HOST}:${PORT}  (/ 술, /shop/ 쇼핑, /trip/ 메인)`);
+    console.log(`jp-trip: http://${HOST}:${PORT}  (/ 술, ${APPS.map((a) => `/${a}/`).join(' ')})`);
     if (!process.env.GEMINI_API_KEY && !process.env.ANTHROPIC_API_KEY) console.log('  (GEMINI_API_KEY / ANTHROPIC_API_KEY 없음 → 사진 인식 비활성)');
   });
