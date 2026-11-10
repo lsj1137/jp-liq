@@ -4,7 +4,7 @@ https://jp-trip.stillim.dev — 일본 여행용 모바일 웹앱 여러 개(쇼
 
 | 폴더 | 주소 | 내용 |
 |---|---|---|
-| `trip/` | `/` | 메인. 여행 지역을 고르면 그 지역 전용 메뉴가 나옴 |
+| `trip/` | `/` | 메인. '지역 선택' 카드 → 일본 지도에서 지방을 고르면 그 지역 전용 메뉴가 나옴 |
 | `shop/` | `/shop/` | 일본 쇼핑 필수템 800개, 면세·반입 팁, 쇼핑 목록 |
 | `liquor/` + `api/` | `/liquor/` | 일본 술 한국 평균가 vs 일본 평균가, 사진 인식, 면세 장바구니 |
 | `talk/` | `/talk/` | 보여주는 일본어 (상황별 문장, 크게 보기, 읽어주기) |
@@ -12,11 +12,13 @@ https://jp-trip.stillim.dev — 일본 여행용 모바일 웹앱 여러 개(쇼
 | `money/` | `/money/` | 여행 경비 (엔/원 기록, 현금·카드, 원화 합계) |
 | `kansai/` | `/kansai/` | 간사이 조이패스 시설 지도 (간사이 선택 시) |
 | `common/` | `/<앱>/common/` | 공통 디자인 `theme.css`, 새 앱 뼈대 `base.css` |
-| `research/`, `scripts/` | — | 술 가격 조사·갱신 스크립트, 조이패스 시설 수집 |
+| `research/`, `scripts/` | — | 술 가격 조사·갱신, 조이패스 시설 수집, 일본 지도 생성(`build-japan-map.mjs`) |
 
 `shop/`(원본 커밋 d3fc09d)과 `kansai/`(ca186ae)는 [lsj1137.github.io](https://github.com/lsj1137/lsj1137.github.io)에서 옮겨 왔다. GitHub Pages 배포는 내렸다.
 
-새 메뉴를 추가할 때: 폴더를 만들고 `server.js`의 `APPS`와 `trip/index.html`의 `MENUS`에 추가한다. nginx는 고칠 필요 없다.
+새 메뉴를 추가할 때: 폴더를 만들고 `server.js`의 `APPS`와 `trip/index.html`의 `MENUS`에 추가한다(지역 전용이면 `region: 'kansai'`처럼). nginx는 고칠 필요 없다.
+
+메인의 일본 지도는 `node scripts/build-japan-map.mjs`로 다시 만든다. 도도부현 경계([dataofjapan/land](https://github.com/dataofjapan/land))를 9개 지방으로 묶어 단순화하고 `trip/index.html`의 `<!-- japan-map -->` 자리에 넣는다. 이름표 위치는 스크립트의 `LABELS`에서 조정.
 
 ## 간사이 조이패스 데이터
 

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#f7f1e7"/><g transform="translate(80 76) scale(5.5)">
+<!-- 종이접기 지도와 벚꽃 -->
+<polygon points="8,16 22,12 22,52 8,56" fill="#f2c4d0"/>
+<polygon points="22,12 40,16 40,56 22,52" fill="#e7a5b6"/>
+<polygon points="40,16 56,12 56,52 40,56" fill="#f2c4d0"/>
+<g transform="translate(32 33)" fill="#c8432f">
+<path id="bp" d="M0-2-1.6-4.6C-5-3.8-5.8.6-4 3.6c1 1.6 2.6 2.6 4 2.6s3-1 4-2.6c1.8-3 1-7.4-2.4-8.2z" transform="translate(0 -5)"/>
+<use href="#bp" transform="rotate(72)"/><use href="#bp" transform="rotate(144)"/><use href="#bp" transform="rotate(216)"/><use href="#bp" transform="rotate(288)"/>
+<circle r="2.4" fill="#f7d6de"/>
+</g>
+</g></svg>
