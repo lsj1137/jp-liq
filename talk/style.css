@@ -6,30 +6,7 @@
 .row .ja { margin-top: 4px; font-size: 17px; }
 .row .read { margin-top: 2px; font-size: 12px; color: var(--faint); }
 
-/* 직원에게 화면을 보여줄 때: 일본어를 크게 */
-#card { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; }
-#card[open] { display: flex; flex-direction: column; }
-#card .show { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: calc(24px + env(safe-area-inset-top)) 24px 16px; }
-#card .ja { font-size: clamp(30px, 9vw, 56px); font-weight: 700; line-height: 1.35; word-break: keep-all; }
-#card .read { font-size: 16px; color: var(--sub); }
-#card .ko { font-size: 18px; font-weight: 600; }
-#card .note { font-size: 14px; color: var(--sub); }
-#card .note:empty { display: none; }
-#card .actions { display: flex; gap: 8px; padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); }
-#card .actions button {
-  flex: 1;
-  height: 52px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--field);
-  color: var(--text);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-#card .actions .primary { background: var(--text); color: #fff; }
-#card .actions [data-speak][hidden] { display: none; }
+
 
 /* 제목 줄 오른쪽 '번역' 버튼: 가·あ 글자 아이콘 + 글자, 종이색 사각 */
 #transBtn { display: flex; align-items: center; gap: 5px; flex: none; height: 34px; padding: 0 11px 0 8px; border: 1px solid #e6dccd; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
@@ -38,34 +15,34 @@
 #transBtn svg text.ja { fill: var(--red); }
 
 /* 번역: 마주 보는 화면 */
-#trans { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); color: var(--text); }
-#trans[open] { display: flex; flex-direction: column; }
-#trans .half { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.face { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); color: var(--text); }
+.face[open] { position: fixed; display: flex; flex-direction: column; overflow: hidden; }
+.face .half { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 /* 위쪽 반: 마주 앉은 상대가 읽도록 180도 뒤집는다 (뒤집혀서 아래 여백이 화면 위쪽이 된다) */
-#trans .them { position: relative; display: flex; align-items: center; justify-content: center; padding: 20px 22px calc(20px + env(safe-area-inset-top)); background: var(--paper, #fff); transform: rotate(180deg); }
-#trans .tjp { margin: 0; max-width: 600px; font-size: clamp(26px, 7.6vw, 44px); font-weight: 700; line-height: 1.4; text-align: center; word-break: normal; line-break: strict; overflow-wrap: anywhere; }
-#trans .tjp.empty { font-size: 17px; font-weight: 500; color: var(--faint); }
-#trans .say { position: absolute; right: 12px; bottom: calc(10px + env(safe-area-inset-top)); display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--field); color: var(--text); cursor: pointer; }
-#trans .say[hidden] { display: none; }
-#trans .say svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.face .them { position: relative; display: flex; align-items: center; justify-content: center; padding: 20px 22px calc(20px + env(safe-area-inset-top)); background: var(--paper, #fff); transform: rotate(180deg); }
+.face .tjp { margin: 0; max-width: 600px; font-size: clamp(26px, 7.6vw, 44px); font-weight: 700; line-height: 1.4; text-align: center; word-break: normal; line-break: strict; overflow-wrap: anywhere; }
+.face .tjp.empty { font-size: 17px; font-weight: 500; color: var(--faint); }
+.face .say { position: absolute; right: 12px; bottom: calc(10px + env(safe-area-inset-top)); display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--field); color: var(--text); cursor: pointer; }
+.face .say[hidden] { display: none; }
+.face .say svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 /* 가운데: 닫기 · 방향 · 말하기 · 사진 */
-#trans .mid { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid #e6dccd; border-bottom: 1px solid #e6dccd; background: var(--bg); }
-#trans .mid button { display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; height: 44px; border: 1px solid #e6dccd; border-radius: 12px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-#trans .mid button[hidden] { display: none; }
-#trans .mid svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-#trans .mid .tback, #trans .mid .icon { width: 44px; padding: 0; }
-#trans .mid .tback svg { stroke-width: 2.2; }
-#trans .mid .dirbtn { padding: 0 10px; font-size: 13px; }
-#trans .mid .dirbtn svg { width: 16px; height: 16px; color: var(--sub); }
+.face .mid { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid #e6dccd; border-bottom: 1px solid #e6dccd; background: var(--bg); }
+.face .mid button { display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; height: 44px; border: 1px solid #e6dccd; border-radius: 12px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.face .mid button[hidden] { display: none; }
+.face .mid svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.face .mid .tback, .face .mid .icon { width: 44px; padding: 0; }
+.face .mid .tback svg { stroke-width: 2.2; }
+.face .mid .dirbtn { padding: 0 10px; font-size: 13px; }
+.face .mid .dirbtn svg { width: 16px; height: 16px; color: var(--sub); }
 #mic { flex: 1 !important; min-width: 0; border-color: var(--blue) !important; background: var(--blue) !important; color: #fff !important; font-size: 15px !important; }
 #mic.on { border-color: var(--red) !important; background: var(--red) !important; }
 #mic.on svg { animation: rec 1s ease-in-out infinite; }
 @keyframes rec { 50% { opacity: 0.35; } }
 
 /* 아래쪽 반: 내 쪽 */
-#trans .me { padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
-#trans .me > * { max-width: 600px; margin-left: auto; margin-right: auto; }
+.face .me { padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
+.face .me > * { max-width: 600px; margin-left: auto; margin-right: auto; }
 .status { min-height: 18px; margin: 0 0 6px; font-size: 12.5px; line-height: 1.4; color: var(--sub); }
 .status:empty { display: none; }
 .status.err { color: var(--red); }
@@ -84,10 +61,31 @@
 .res ol li { padding: 8px 0; border-top: 1px solid var(--line); }
 .res ol li .ja { font-size: 13px; color: var(--sub); }
 .res ol li .ko { margin-top: 2px; font-size: 15px; }
-.recent { margin-top: 16px; }
-.recent p { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; color: var(--sub); }
-.recent button { display: block; width: 100%; padding: 9px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.recent button span { margin-left: 6px; color: var(--sub); }
 
 /* 일본어는 띄어쓰기가 없어서 단어 단위 줄바꿈(keep-all)이면 화면 밖으로 넘친다 */
-#card .ja { word-break: normal; line-break: strict; overflow-wrap: anywhere; }
+
+/* 문장 카드 */
+#card .tjp { font-size: clamp(30px, 9vw, 56px); }
+#card .speakbtn { flex: 1; padding: 0 14px; }
+#card .speakbtn[hidden] { display: none; }
+#card .me { display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+#card .ko { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.4; }
+#card .read { margin: 0; font-size: 16px; color: var(--sub); }
+#card .note { margin: 0; font-size: 14px; color: var(--sub); }
+#card .note:empty { display: none; }
+
+/* 최근 번역: 아래에 숨겨 둔 시트. 버튼을 누르거나 아래쪽 반에서 위로 쓸면 올라온다 */
+.recentBtn { position: absolute; left: 50%; bottom: calc(10px + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 4px; height: 34px; padding: 0 12px 0 8px; border: 1px solid #e6dccd; border-radius: 10px; background: var(--paper, #fff); color: var(--sub); font: inherit; font-size: 13px; font-weight: 600; transform: translateX(-50%); cursor: pointer; }
+.recentBtn[hidden] { display: none; }
+.recentBtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.recentBtn b { color: var(--text); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; flex-direction: column; max-height: 62%; padding: 4px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; background: var(--paper, #fff); box-shadow: 0 -8px 24px rgba(47, 42, 38, 0.16); transform: translateY(105%); transition: transform 0.25s ease; }
+.sheet.open { transform: none; }
+.sheet .grip { display: grid; place-items: center; flex: none; width: 100%; height: 28px; border: 0; background: none; cursor: pointer; }
+.sheet .grip i { width: 40px; height: 4px; border-radius: 2px; background: #d9cfc2; }
+.sheet .sheetTitle { flex: none; margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+.sheet .list { overflow-y: auto; overscroll-behavior: contain; }
+.sheet .list button { display: block; width: 100%; padding: 11px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--text); font: inherit; font-size: 15px; text-align: left; cursor: pointer; }
+.sheet .list button span { display: block; margin-top: 2px; font-size: 13px; color: var(--sub); }
+.face .me { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+#card.face .me { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }

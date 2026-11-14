@@ -45,16 +45,23 @@ function openCard(it) {
   d.querySelector('[data-speak]').hidden = !canSpeak;
   cardJa = it.ja;
   d.showModal();
+  history.pushState({ card: 1 }, '');
 }
 
 $('#list').addEventListener('click', (e) => {
   const row = e.target.closest('.row');
   if (row) openCard(state.items[row.dataset.i]);
 });
+// 닫기 버튼·Esc는 기록을 되돌려서(popstate) 닫는다 → 휴대폰 뒤로가기와 같은 길
 $('#card').addEventListener('click', (e) => {
-  if (e.target.closest('[data-close]')) $('#card').close();
+  if (e.target.closest('[data-close]')) history.back();
   else if (e.target.closest('[data-speak]')) speak(cardJa);
 });
+$('#card').addEventListener('cancel', (e) => {
+  e.preventDefault();
+  history.back();
+});
+addEventListener('popstate', () => $('#card').open && $('#card').close());
 $('#card').addEventListener('close', () => canSpeak && speechSynthesis.cancel());
 $('#q').addEventListener('input', render);
 $('#cats').addEventListener('click', (e) => {
@@ -117,13 +124,7 @@ function speakAs(text, lang) {
 function renderResult() {
   renderThem();
   const r = ai.result;
-  const recent = loadRecent().filter((x) => !r || x.ja !== r.ja);
-  const recentHtml = recent.length
-    ? `<div class="recent"><p>최근 번역</p>${recent
-        .slice(0, 6)
-        .map((x, i) => `<button type="button" data-recent="${i}">${esc(x.ko)}<span lang="ja">${esc(x.ja)}</span></button>`)
-        .join('')}</div>`
-    : '';
+  renderRecent();
   let main = '';
   if (r?.lines) {
     main = `<div class="res photo">
@@ -135,8 +136,51 @@ function renderResult() {
   } else if (r) {
     main = `<div class="res"><p class="read"><b>읽는 법</b>${esc(r.read)}</p>${$('#src').value.trim() === r.ko ? '' : `<p class="small">${esc(r.ko)}</p>`}</div>`;
   }
-  $('#aiResult').innerHTML = main + recentHtml;
+  $('#aiResult').innerHTML = main;
 }
+
+// 최근 번역 시트
+function renderRecent() {
+  const list = loadRecent();
+  $('#recentBtn').hidden = !list.length;
+  $('#recentN').textContent = list.length;
+  $('#recentList').innerHTML = list.map((x, i) => `<button type="button" data-recent="${i}">${esc(x.ko)}<span lang="ja">${esc(x.ja)}</span></button>`).join('');
+}
+function sheet(open) {
+  $('#recentSheet').classList.toggle('open', open);
+  $('#recentSheet').setAttribute('aria-hidden', String(!open));
+}
+$('#recentBtn').addEventListener('click', () => sheet(true));
+$('#recentClose').addEventListener('click', () => sheet(false));
+$('#recentList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-recent]');
+  const x = b && loadRecent()[Number(b.dataset.recent)];
+  if (!x) return;
+  ai.result = x;
+  if (ai.from === 'ko') $('#src').value = x.ko;
+  ai.last = $('#src').value.trim();
+  renderResult();
+  sheet(false);
+});
+// 쓸어 올리기·내리기: 아래쪽 반에서 위로 쓸면 열고, 시트를 아래로 쓸면 닫는다
+function swipe(el, onSwipe) {
+  let y0 = null;
+  el.addEventListener('touchstart', (e) => (y0 = e.touches[0].clientY), { passive: true });
+  el.addEventListener('touchend', (e) => {
+    if (y0 === null) return;
+    const dy = e.changedTouches[0].clientY - y0;
+    y0 = null;
+    if (Math.abs(dy) > 50) onSwipe(dy < 0 ? 'up' : 'down');
+  });
+}
+swipe($('#trans .me'), (dir) => {
+  // 아래쪽 반이 스크롤 중이면(맨 아래가 아니면) 스크롤로 둔다
+  const me = $('#trans .me');
+  if (dir === 'up' && loadRecent().length && me.scrollTop + me.clientHeight >= me.scrollHeight - 4) sheet(true);
+});
+swipe($('#recentSheet'), (dir) => {
+  if (dir === 'down' && $('#recentList').scrollTop <= 0) sheet(false);
+});
 
 async function call(body) {
   const offline = '번역은 인터넷이 필요해요. 아래 문장 목록은 그대로 쓸 수 있어요.';
@@ -200,16 +244,6 @@ $('#swap').addEventListener('click', () => {
   $('#src').value = ai.from === 'ko' && ai.result && !ai.result.lines ? ai.result.ko : '';
   ai.last = $('#src').value.trim();
   status('');
-  renderResult();
-});
-$('#aiResult').addEventListener('click', (e) => {
-  const rec = e.target.closest('[data-recent]');
-  if (!rec) return;
-  const x = loadRecent().filter((r) => !ai.result || r.ja !== ai.result.ja)[Number(rec.dataset.recent)];
-  if (!x) return;
-  ai.result = x;
-  if (ai.from === 'ko') $('#src').value = x.ko;
-  ai.last = $('#src').value.trim();
   renderResult();
 });
 $('#sayJa').addEventListener('click', () => ai.result?.ja && speakAs(ai.result.ja, 'ja-JP'));
@@ -401,6 +435,7 @@ function openTrans() {
 }
 function closeTrans() {
   stopRec(false);
+  sheet(false);
   if ($('#trans').open) $('#trans').close();
 }
 $('#transBtn').addEventListener('click', openTrans);

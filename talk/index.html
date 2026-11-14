@@ -41,7 +41,7 @@
 
     <!-- 번역: 마주 보고 쓰는 화면. 위쪽 반은 상대방 쪽(일본어, 180도 뒤집힘), 아래쪽 반은 내 쪽(한국어),
          가운데에 닫기·방향·말하기·사진. 뒤로가기로 닫힌다 -->
-    <dialog id="trans" aria-label="번역">
+    <dialog id="trans" class="face" aria-label="번역">
       <section class="half them" aria-label="상대방 쪽 (일본어)">
         <p class="tjp" id="themText" lang="ja"></p>
         <button type="button" class="say" id="sayJa" aria-label="일본어로 읽어 주기" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></svg></button>
@@ -57,20 +57,29 @@
         <textarea id="src" rows="2" maxlength="300" placeholder="하고 싶은 말을 한국어로 적거나 말하기를 누르세요" enterkeyhint="done"></textarea>
         <div id="aiResult"></div>
       </section>
+      <button type="button" class="recentBtn" id="recentBtn" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" /></svg><span>최근 번역</span><b id="recentN"></b></button>
+      <div class="sheet" id="recentSheet" aria-label="최근 번역" aria-hidden="true">
+        <button type="button" class="grip" id="recentClose" aria-label="최근 번역 닫기"><i></i></button>
+        <p class="sheetTitle">최근 번역</p>
+        <div class="list" id="recentList"></div>
+      </div>
       <input type="file" id="photo" accept="image/*" capture="environment" hidden />
     </dialog>
 
-    <dialog id="card">
-      <div class="show">
-        <p class="ja" lang="ja"></p>
-        <p class="read"></p>
+    <!-- 문장 카드: 번역 화면과 같은 마주 보는 화면. 위쪽 반은 상대방용 일본어(뒤집힘), 아래쪽 반은 한국어·읽는 법 -->
+    <dialog id="card" class="face" aria-label="문장 크게 보기">
+      <section class="half them">
+        <p class="tjp ja" lang="ja"></p>
+      </section>
+      <div class="mid">
+        <button type="button" class="tback" data-close aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+        <button type="button" class="speakbtn" data-speak><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" /></svg><span>소리로 듣기</span></button>
+      </div>
+      <section class="half me">
         <p class="ko"></p>
+        <p class="read"></p>
         <p class="note"></p>
-      </div>
-      <div class="actions">
-        <button type="button" data-speak>소리로 듣기</button>
-        <button type="button" class="primary" data-close>닫기</button>
-      </div>
+      </section>
     </dialog>
 
     <script type="module" src="app.js"></script>
