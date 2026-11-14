@@ -83,12 +83,24 @@ const status = (msg, err = false) => {
   $('#aiStatus').classList.toggle('err', err);
 };
 
+// 한국어→일본어: 내가 아래에서 적거나 말하면 위쪽(상대)에 일본어가 크게.
+// 일본어→한국어: 상대가 말하면 아래쪽(나)에 한국어가 크게. 이때는 입력칸을 숨긴다.
 function renderDir() {
   const ko = ai.from === 'ko';
   $('#dirFrom').textContent = ko ? '한국어' : '일본어';
   $('#dirTo').textContent = ko ? '일본어' : '한국어';
-  $('#src').placeholder = ko ? '하고 싶은 말을 한국어로 적어 보세요' : '일본어를 적거나, 상대가 말하게 해 보세요';
-  $('#src').lang = ko ? 'ko' : 'ja';
+  $('#src').hidden = !ko;
+  renderThem();
+}
+
+// 위쪽 반(상대방 쪽): 번역된 일본어, 없으면 상대에게 보이는 안내(일본어)
+function renderThem(listening = false) {
+  const r = ai.result && !ai.result.lines ? ai.result : null;
+  const el = $('#themText');
+  const text = listening && ai.from === 'ja' ? 'どうぞ、お話しください…' : r ? r.ja : ai.from === 'ja' ? '日本語で話してください。韓国語に翻訳します。' : 'ここに日本語が表示されます';
+  el.textContent = text;
+  el.classList.toggle('empty', !r || (listening && ai.from === 'ja'));
+  $('#sayJa').hidden = !(r && canSpeak) || (listening && ai.from === 'ja');
 }
 
 function speakAs(text, lang) {
@@ -101,32 +113,29 @@ function speakAs(text, lang) {
   speechSynthesis.speak(u);
 }
 
+// 아래쪽 반(내 쪽): 한국어. 한→일이면 일본어 읽는 법, 일→한이면 번역된 한국어를 크게. 사진은 줄별 번역. 그 아래 최근 번역.
 function renderResult() {
+  renderThem();
   const r = ai.result;
   const recent = loadRecent().filter((x) => !r || x.ja !== r.ja);
   const recentHtml = recent.length
     ? `<div class="recent"><p>최근 번역</p>${recent
-        .slice(0, 5)
-        .map((x, i) => `<button type="button" data-recent="${i}">${esc(x.from === 'ja' ? x.ko : x.ja)}<span>${esc(x.from === 'ja' ? x.ja : x.ko)}</span></button>`)
+        .slice(0, 6)
+        .map((x, i) => `<button type="button" data-recent="${i}">${esc(x.ko)}<span lang="ja">${esc(x.ja)}</span></button>`)
         .join('')}</div>`
     : '';
-  if (!r) return ($('#aiResult').innerHTML = recentHtml);
-  if (r.lines) {
-    $('#aiResult').innerHTML = `<div class="res photo">
+  let main = '';
+  if (r?.lines) {
+    main = `<div class="res photo">
       <p class="sum">${esc(r.summary || '사진 속 글자')}</p>
       ${r.lines.length ? `<ol>${r.lines.map((l) => `<li><p class="ja" lang="ja">${esc(l.ja)}</p><p class="ko">${esc(l.ko)}</p></li>`).join('')}</ol>` : ''}
-    </div>${recentHtml}`;
-    return;
+    </div>`;
+  } else if (r && r.from === 'ja') {
+    main = `<div class="res"><p class="big">${esc(r.ko)}</p><p class="small ja" lang="ja">${esc(r.ja)}</p></div>`;
+  } else if (r) {
+    main = `<div class="res"><p class="read"><b>읽는 법</b>${esc(r.read)}</p>${$('#src').value.trim() === r.ko ? '' : `<p class="small">${esc(r.ko)}</p>`}</div>`;
   }
-  // 한국어→일본어는 일본어를 크게(점원에게 보여 줄 것), 일본어→한국어는 한국어를 크게
-  const toJa = r.from === 'ko';
-  $('#aiResult').innerHTML = `<div class="res">
-    ${toJa ? `<p class="big ja" lang="ja">${esc(r.ja)}</p><p class="read">${esc(r.read)}</p><p class="small">${esc(r.ko)}</p>` : `<p class="big">${esc(r.ko)}</p><p class="small ja" lang="ja">${esc(r.ja)}</p><p class="read">${esc(r.read)}</p>`}
-    <div class="acts">
-      ${toJa ? '<button type="button" class="primary" data-act="show">크게 보여 주기</button>' : ''}
-      <button type="button" data-act="speak"${canSpeak ? '' : ' hidden'}>소리로 듣기</button>
-    </div>
-  </div>${recentHtml}`;
+  $('#aiResult').innerHTML = main + recentHtml;
 }
 
 async function call(body) {
@@ -186,27 +195,24 @@ $('#swap').addEventListener('click', () => {
   ai.from = ai.from === 'ko' ? 'ja' : 'ko';
   localStorage.setItem('jp-talk-from', ai.from);
   renderDir();
+  micUi(false);
   // 방금 번역한 결과가 있으면 그 결과를 입력으로 바꿔 넣는다 (상대 답을 받아 적을 때 편하게)
-  if (ai.result && !ai.result.lines) $('#src').value = ai.from === 'ko' ? ai.result.ko : ai.result.ja;
-  else $('#src').value = '';
+  $('#src').value = ai.from === 'ko' && ai.result && !ai.result.lines ? ai.result.ko : '';
   ai.last = $('#src').value.trim();
   status('');
+  renderResult();
 });
 $('#aiResult').addEventListener('click', (e) => {
   const rec = e.target.closest('[data-recent]');
-  if (rec) {
-    const x = loadRecent().filter((r) => !ai.result || r.ja !== ai.result.ja)[Number(rec.dataset.recent)];
-    if (!x) return;
-    ai.result = x;
-    renderResult();
-    return x.from === 'ko' && openCard(x);
-  }
-  const act = e.target.closest('[data-act]')?.dataset.act;
-  const r = ai.result;
-  if (!r || r.lines) return;
-  if (act === 'show') openCard(r);
-  else if (act === 'speak') r.from === 'ko' ? speakAs(r.ja, 'ja-JP') : speakAs(r.ko, 'ko-KR');
+  if (!rec) return;
+  const x = loadRecent().filter((r) => !ai.result || r.ja !== ai.result.ja)[Number(rec.dataset.recent)];
+  if (!x) return;
+  ai.result = x;
+  if (ai.from === 'ko') $('#src').value = x.ko;
+  ai.last = $('#src').value.trim();
+  renderResult();
 });
+$('#sayJa').addEventListener('click', () => ai.result?.ja && speakAs(ai.result.ja, 'ja-JP'));
 
 // 말하기: 녹음한 소리를 AI가 받아 적고 번역한다.
 // 브라우저 내장 음성 인식은 아이폰 홈 화면 앱 등에서 권한 창도 없이 실패해서 쓰지 않는다.
@@ -226,7 +232,8 @@ if (navigator.mediaDevices?.getUserMedia) $('#mic').hidden = false;
 
 function micUi(on) {
   $('#mic').classList.toggle('on', on);
-  $('#mic span').textContent = on ? `끝내기 ${recState.sec}초` : '말하기';
+  $('#mic span').textContent = on ? `끝내기 ${recState.sec}초` : ai.from === 'ko' ? '말하기' : '상대 말 듣기';
+  renderThem(on);
 }
 
 function cleanupRec() {
@@ -282,7 +289,7 @@ async function startRec() {
   recState.node.connect(recState.ctx.destination);
   recState.sec = 0;
   micUi(true);
-  status(ai.from === 'ko' ? '한국어로 말해 주세요. 말이 끝나면 바로 번역해요' : '상대가 일본어로 말하게 해 주세요. 말이 끝나면 바로 번역해요');
+  status(ai.from === 'ko' ? '한국어로 말해 주세요. 말이 끝나면 바로 번역해요' : '휴대폰을 상대에게 향해 주세요. 상대 말이 끝나면 바로 번역해요');
   recState.timer = setInterval(() => {
     recState.sec++;
     micUi(true);
@@ -408,6 +415,7 @@ document.addEventListener('visibilitychange', () => document.hidden && stopRec(f
 
 renderDir();
 renderResult();
+micUi(false);
 
 const data = await (await fetch('data.json')).json();
 state.cats = data.cats;

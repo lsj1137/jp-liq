@@ -31,60 +31,63 @@
 #card .actions .primary { background: var(--text); color: #fff; }
 #card .actions [data-speak][hidden] { display: none; }
 
-/* AI 번역 */
-.ai { padding: 14px 14px 12px; border-radius: 16px; background: var(--paper, #fff); }
-.aihead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.dir { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
-.dir .arrow { width: 16px; height: 16px; fill: none; stroke: var(--sub); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.swap { height: 30px; padding: 0 10px; border: 1px solid #e6dccd; border-radius: 8px; background: none; color: var(--sub); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
-#src { display: block; width: 100%; min-height: 64px; margin-top: 10px; padding: 11px 12px; border: 0; border-radius: 12px; background: var(--field); color: var(--text); font: inherit; font-size: 16px; line-height: 1.45; resize: none; outline: none; }
-#src:focus { box-shadow: inset 0 0 0 2px var(--blue); }
-.tools { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-.tools button { display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 11px; border: 0; border-radius: 10px; background: var(--field); color: var(--text); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
-.tools button[hidden] { display: none; }
-.tools svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-#mic.on { background: var(--red); color: #fff; }
-.status { flex: 1; min-width: 0; margin: 0; text-align: right; font-size: 12.5px; line-height: 1.35; color: var(--sub); }
-.status.err { color: var(--red); white-space: normal; }
-#aiResult:empty { display: none; }
-.res { margin-top: 12px; padding: 14px 14px 12px; border-left: 3px solid var(--blue); border-radius: 0 12px 12px 0; background: var(--paper-press, #f8f1e6); }
-.res .big { font-size: 22px; font-weight: 700; line-height: 1.4; word-break: keep-all; }
-.res .read { margin-top: 4px; font-size: 13px; color: var(--sub); }
-.res .small { margin-top: 6px; font-size: 14px; color: var(--sub); }
-.res .acts { display: flex; gap: 8px; margin-top: 12px; }
-.res .acts button { flex: 1; height: 40px; border: 0; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
-.res .acts .primary { background: var(--blue); color: #fff; }
-.res .acts button[hidden] { display: none; }
-.res .sum { font-size: 14px; font-weight: 600; }
-.res ol { margin: 10px 0 0; padding: 0; list-style: none; }
-.res ol li { padding: 8px 0; border-top: 1px solid var(--line); }
-.res ol li .ja { font-size: 13px; color: var(--sub); }
-.res ol li .ko { margin-top: 2px; font-size: 15px; }
-.res.photo { border-left-color: var(--red); }
-.recent { margin-top: 12px; }
-.recent p { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; color: var(--sub); }
-.recent button { display: block; width: 100%; padding: 8px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.recent button span { margin-left: 6px; color: var(--sub); }
-/* 일본어는 띄어쓰기가 없어서 단어 단위 줄바꿈(keep-all)이면 화면 밖으로 넘친다 */
-.res .big.ja,
-#card .ja { word-break: normal; line-break: strict; overflow-wrap: anywhere; }
-
 /* 제목 줄 오른쪽 '번역' 버튼: 가·あ 글자 아이콘 + 글자, 종이색 사각 */
 #transBtn { display: flex; align-items: center; gap: 5px; flex: none; height: 34px; padding: 0 11px 0 8px; border: 1px solid #e6dccd; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
 #transBtn svg { width: 20px; height: 20px; }
 #transBtn svg text { fill: currentColor; font-family: "Gowun Batang", serif; font-size: 12px; font-weight: 700; }
 #transBtn svg text.ja { fill: var(--red); }
 
-/* 번역 전체 화면 */
+/* 번역: 마주 보는 화면 */
 #trans { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); color: var(--text); }
 #trans[open] { display: flex; flex-direction: column; }
-#trans .thead { display: flex; align-items: center; gap: 4px; max-width: 640px; width: 100%; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top)) 12px 6px 6px; }
-#trans .thead h2 { margin: 0; font-family: "Gowun Batang", serif; font-size: 20px; }
-#trans .tback { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--text); cursor: pointer; }
-#trans .tback svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-#trans .tbody { flex: 1; overflow-y: auto; width: 100%; max-width: 640px; margin: 0 auto; padding: 4px 12px calc(24px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+#trans .half { flex: 1 1 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+/* 위쪽 반: 마주 앉은 상대가 읽도록 180도 뒤집는다 (뒤집혀서 아래 여백이 화면 위쪽이 된다) */
+#trans .them { position: relative; display: flex; align-items: center; justify-content: center; padding: 20px 22px calc(20px + env(safe-area-inset-top)); background: var(--paper, #fff); transform: rotate(180deg); }
+#trans .tjp { margin: 0; max-width: 600px; font-size: clamp(26px, 7.6vw, 44px); font-weight: 700; line-height: 1.4; text-align: center; word-break: normal; line-break: strict; overflow-wrap: anywhere; }
+#trans .tjp.empty { font-size: 17px; font-weight: 500; color: var(--faint); }
+#trans .say { position: absolute; right: 12px; bottom: calc(10px + env(safe-area-inset-top)); display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--field); color: var(--text); cursor: pointer; }
+#trans .say[hidden] { display: none; }
+#trans .say svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-/* 녹음 중 */
-#mic.on { background: var(--red); color: #fff; }
+/* 가운데: 닫기 · 방향 · 말하기 · 사진 */
+#trans .mid { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-top: 1px solid #e6dccd; border-bottom: 1px solid #e6dccd; background: var(--bg); }
+#trans .mid button { display: flex; align-items: center; justify-content: center; gap: 6px; flex: none; height: 44px; border: 1px solid #e6dccd; border-radius: 12px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+#trans .mid button[hidden] { display: none; }
+#trans .mid svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#trans .mid .tback, #trans .mid .icon { width: 44px; padding: 0; }
+#trans .mid .tback svg { stroke-width: 2.2; }
+#trans .mid .dirbtn { padding: 0 10px; font-size: 13px; }
+#trans .mid .dirbtn svg { width: 16px; height: 16px; color: var(--sub); }
+#mic { flex: 1 !important; min-width: 0; border-color: var(--blue) !important; background: var(--blue) !important; color: #fff !important; font-size: 15px !important; }
+#mic.on { border-color: var(--red) !important; background: var(--red) !important; }
 #mic.on svg { animation: rec 1s ease-in-out infinite; }
 @keyframes rec { 50% { opacity: 0.35; } }
+
+/* 아래쪽 반: 내 쪽 */
+#trans .me { padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); }
+#trans .me > * { max-width: 600px; margin-left: auto; margin-right: auto; }
+.status { min-height: 18px; margin: 0 0 6px; font-size: 12.5px; line-height: 1.4; color: var(--sub); }
+.status:empty { display: none; }
+.status.err { color: var(--red); }
+#src { display: block; width: 100%; min-height: 60px; padding: 11px 12px; border: 1px solid #e6dccd; border-radius: 12px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 17px; line-height: 1.45; resize: none; outline: none; }
+#src[hidden] { display: none; }
+#src:focus { box-shadow: inset 0 0 0 2px var(--blue); }
+#aiResult:empty { display: none; }
+.res { margin-top: 12px; }
+.res .big { font-size: 24px; font-weight: 700; line-height: 1.4; word-break: keep-all; }
+.res .read { margin-top: 6px; font-size: 14px; color: var(--sub); }
+.res .read b { margin-right: 6px; color: var(--text); font-weight: 600; }
+.res .small { margin-top: 6px; font-size: 14px; color: var(--sub); }
+.res.photo { padding: 12px 14px; border-left: 3px solid var(--red); border-radius: 0 12px 12px 0; background: var(--paper-press, #f8f1e6); }
+.res .sum { font-size: 14px; font-weight: 600; }
+.res ol { margin: 8px 0 0; padding: 0; list-style: none; }
+.res ol li { padding: 8px 0; border-top: 1px solid var(--line); }
+.res ol li .ja { font-size: 13px; color: var(--sub); }
+.res ol li .ko { margin-top: 2px; font-size: 15px; }
+.recent { margin-top: 16px; }
+.recent p { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; color: var(--sub); }
+.recent button { display: block; width: 100%; padding: 9px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent button span { margin-left: 6px; color: var(--sub); }
+
+/* 일본어는 띄어쓰기가 없어서 단어 단위 줄바꿈(keep-all)이면 화면 밖으로 넘친다 */
+#card .ja { word-break: normal; line-break: strict; overflow-wrap: anywhere; }
