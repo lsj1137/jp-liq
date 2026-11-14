@@ -1,5 +1,6 @@
 import whiskies from '../liquor/whiskies.json' with { type: 'json' };
 import { send, readJson } from '../lib/http.js';
+import { ProviderError, pickProvider, parseJson, createLimiter, clientIp, parseImage } from '../lib/ai.js';
 
 const CATALOG = whiskies.map((w) => `${w.id}: ${w.en}`).join('\n');
 const PROMPT = `사진 속 술병(위스키, 사케, 소주, 우메슈, 와인·샴페인 등)의 라벨을 읽고, 아래 목록에서 정확히 같은 제품의 id를 고르세요.
@@ -9,133 +10,24 @@ JSON 한 줄만 출력하세요: {"id": "<id 또는 null>", "name": "<라벨에 
 목록:
 ${CATALOG}`;
 
-class ProviderError extends Error {}
-
-// fn을 실행하고, delay 안에 답이 없거나 실패하면 같은 요청을 한 번 더 보내 먼저 성공한 결과를 쓴다.
-// 둘 다 실패하면 마지막 에러. 끝나면 남은 요청은 취소한다.
-function hedge(fn, delay = 6000, timeout = 25000) {
-  const ctrls = [];
-  return new Promise((resolve, reject) => {
-    let pending = 0;
-    const finish = (v) => {
-      clearTimeout(timer);
-      ctrls.forEach((c) => c.abort());
-      resolve(v);
-    };
-    const launch = () => {
-      const c = new AbortController();
-      ctrls.push(c);
-      pending++;
-      fn(AbortSignal.any([c.signal, AbortSignal.timeout(timeout)])).then(finish, (e) => {
-        if (--pending > 0) return;
-        if (ctrls.length < 2) launch();
-        else reject(e);
-      });
-    };
-    const timer = setTimeout(() => ctrls.length < 2 && launch(), delay);
-    launch();
-  });
-}
-
-// 각 provider는 (mime, base64) → 모델이 출력한 텍스트를 돌려준다.
-const PROVIDERS = {
-  gemini: {
-    key: 'GEMINI_API_KEY',
-    model: process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite',
-    async call(key, mime, data) {
-      const thinking = process.env.GEMINI_THINKING ?? 'minimal';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`;
-      const body = JSON.stringify({
-        contents: [{ parts: [{ inline_data: { mime_type: mime, data } }, { text: PROMPT }] }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          maxOutputTokens: 200,
-          // 라벨 읽기에 긴 추론은 필요 없다
-          ...(thinking && { thinkingConfig: { thinkingLevel: thinking } }),
-        },
-      });
-      // 같은 요청이 보통 2초인데 가끔 20~40초 걸려서(실측), 늦으면 하나 더 보내 먼저 온 답을 쓴다
-      return hedge(async (signal) => {
-        const r = await fetch(url, {
-          method: 'POST',
-          headers: { 'x-goog-api-key': key, 'content-type': 'application/json' },
-          body,
-          signal,
-        });
-        if (!r.ok) throw new ProviderError(`인식 서버 오류 (Gemini ${r.status})`);
-        const d = await r.json();
-        return d.candidates?.[0]?.content?.parts?.filter((p) => !p.thought).map((p) => p.text ?? '').join('') ?? '';
-      });
-    },
-  },
-  claude: {
-    key: 'ANTHROPIC_API_KEY',
-    model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001',
-    async call(key, mime, data) {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({
-          model: this.model,
-          max_tokens: 200,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'base64', media_type: mime, data } },
-                { type: 'text', text: PROMPT },
-              ],
-            },
-          ],
-        }),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!r.ok) throw new ProviderError(`인식 서버 오류 (Claude ${r.status})`);
-      const d = await r.json();
-      return d.content?.find((c) => c.type === 'text')?.text ?? '';
-    },
-  },
-};
-
-// VISION_PROVIDER로 고정하거나, 없으면 키가 있는 쪽을 쓴다 (Gemini 우선).
-function pickProvider() {
-  const name = process.env.VISION_PROVIDER || ['gemini', 'claude'].find((n) => process.env[PROVIDERS[n].key]);
-  const p = PROVIDERS[name];
-  return p && process.env[p.key] ? { ...p, apiKey: process.env[p.key] } : null;
-}
-
 // 남이 API를 반복 호출해 Gemini 무료 한도(하루 1,500회)를 다 쓰지 않게 막는다.
 // 인식 한 번에 Gemini를 최대 2번 부르므로(hedge) 전체 하루 한도는 그 절반 아래로 잡는다.
-// 메모리에만 저장해서 서버를 재시작하면 초기화된다.
-const LIMIT = {
+const overLimit = createLimiter({
   perMinute: Number(process.env.IDENTIFY_PER_MINUTE) || 6,
   perDay: Number(process.env.IDENTIFY_PER_DAY) || 60,
   allPerDay: Number(process.env.IDENTIFY_ALL_PER_DAY) || 600,
-};
-let usage = { day: '', all: 0, byIp: new Map() };
-
-function overLimit(ip) {
-  const day = new Date().toISOString().slice(0, 10);
-  if (usage.day !== day) usage = { day, all: 0, byIp: new Map() };
-  const now = Date.now();
-  const u = usage.byIp.get(ip) ?? { day: 0, recent: [] };
-  u.recent = u.recent.filter((t) => now - t < 60_000);
-  if (usage.all >= LIMIT.allPerDay) return '오늘 사진 인식 사용량이 다 찼어요. 이름으로 검색해 주세요.';
-  if (u.day >= LIMIT.perDay) return '오늘 사진 인식을 너무 많이 썼어요. 이름으로 검색해 주세요.';
-  if (u.recent.length >= LIMIT.perMinute) return '잠시 후 다시 찍어 주세요 (1분에 6번까지).';
-  u.day++;
-  u.recent.push(now);
-  usage.all++;
-  usage.byIp.set(ip, u);
-  return null;
-}
+  messages: {
+    all: '오늘 사진 인식 사용량이 다 찼어요. 이름으로 검색해 주세요.',
+    day: '오늘 사진 인식을 너무 많이 썼어요. 이름으로 검색해 주세요.',
+    minute: '잠시 후 다시 찍어 주세요 (1분에 6번까지).',
+  },
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return send(res, 405, { error: 'POST만 지원해요.' });
   const provider = pickProvider();
   if (!provider) return send(res, 503, { error: '사진 인식이 설정되지 않았어요 (API 키 없음). 이름으로 검색해 주세요.' });
-  // nginx가 실제 접속 IP를 X-Real-IP로 넘겨준다. 앱 서버는 127.0.0.1에서만 열려 있어 위조할 수 없다.
-  const limited = overLimit(req.headers['x-real-ip'] ?? req.socket.remoteAddress);
+  const limited = overLimit(clientIp(req));
   if (limited) return send(res, 429, { error: limited });
 
   let body;
@@ -144,22 +36,18 @@ export default async function handler(req, res) {
   } catch (e) {
     return e.message === 'too large' ? send(res, 413, { error: '사진이 너무 커요.' }) : send(res, 400, { error: '요청 형식이 잘못됐어요.' });
   }
-  const m = /^data:(image\/(?:jpeg|png|webp|gif));base64,(.+)$/.exec(body?.image ?? '');
-  if (!m) return send(res, 400, { error: '이미지 형식이 올바르지 않아요.' });
+  const image = parseImage(body?.image);
+  if (!image) return send(res, 400, { error: '이미지 형식이 올바르지 않아요.' });
 
   let text;
   try {
-    text = await provider.call(provider.apiKey, m[1], m[2]);
+    text = await provider.call(provider.apiKey, { prompt: PROMPT, image, maxTokens: 200 });
   } catch (e) {
-    return send(res, 502, { error: e instanceof ProviderError ? e.message : '인식 서버에 연결하지 못했어요.' });
+    return send(res, 502, { error: e instanceof ProviderError ? e.message.replace('AI 서버', '인식 서버') : '인식 서버에 연결하지 못했어요.' });
   }
 
-  let out;
-  try {
-    out = JSON.parse(text.match(/\{[\s\S]*\}/)[0]);
-  } catch {
-    return send(res, 502, { error: '라벨을 읽지 못했어요. 라벨이 잘 보이게 다시 찍어 주세요.' });
-  }
+  const out = parseJson(text);
+  if (!out) return send(res, 502, { error: '라벨을 읽지 못했어요. 라벨이 잘 보이게 다시 찍어 주세요.' });
   const id = whiskies.some((w) => w.id === out.id) ? out.id : null;
   send(res, 200, { id, name: typeof out.name === 'string' ? out.name : null, model: provider.model });
 }

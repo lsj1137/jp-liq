@@ -362,7 +362,7 @@
 
       // 이번 여행 기록(설정 제외). 여행 종료는 이것만 지우고, 내보내기·불러오기도 이것만 다룬다.
       // 지역·정렬·환율·간사이 즐겨찾기 같은 설정은 남긴다.
-      const TRIP_DATA = ['jp-check', 'jp-check-bag', 'jp-money', 'jp-shop-cart', 'jp-shop-checked', 'cart'];
+      const TRIP_DATA = ['jp-check', 'jp-check-bag', 'jp-money', 'jp-shop-cart', 'jp-shop-checked', 'cart', 'jp-talk-recent'];
       const ui = () => import('./common/ui.js');
       const read = (k, d) => JSON.parse(localStorage.getItem(k) || 'null') ?? d;
       const yen = (n) => `¥${Math.round(n).toLocaleString('ja-JP')}`;
@@ -474,7 +474,7 @@
         const { confirmBox, toast } = await ui();
         const ok = await confirmBox(
           '여행을 마칠까요?',
-          '이번 여행 기록을 모두 지워요.<ul><li>체크리스트 체크와 내 짐</li><li>여행 경비 기록</li><li>쇼핑 목록</li><li>술 면세 장바구니</li></ul><br>지운 기록은 되돌릴 수 없어요. 남겨 두려면 먼저 <b>기록 내보내기</b>로 저장하세요.',
+          '이번 여행 기록을 모두 지워요.<ul><li>체크리스트 체크와 내 짐</li><li>여행 경비 기록</li><li>쇼핑 목록</li><li>술 면세 장바구니</li><li>최근 번역</li></ul><br>지운 기록은 되돌릴 수 없어요. 남겨 두려면 먼저 <b>기록 내보내기</b>로 저장하세요.',
           { ok: '기록 지우기', danger: true },
         );
         if (!ok) return;

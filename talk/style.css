@@ -30,3 +30,41 @@
 }
 #card .actions .primary { background: var(--text); color: #fff; }
 #card .actions [data-speak][hidden] { display: none; }
+
+/* AI 번역 */
+.ai { margin: 12px 0 4px; padding: 14px 14px 12px; border-radius: 16px; background: #fff; }
+.aihead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dir { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
+.dir .arrow { width: 16px; height: 16px; fill: none; stroke: var(--sub); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.swap { height: 30px; padding: 0 10px; border: 1px solid #e6dccd; border-radius: 8px; background: none; color: var(--sub); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+#src { display: block; width: 100%; min-height: 64px; margin-top: 10px; padding: 11px 12px; border: 0; border-radius: 12px; background: var(--field); color: var(--text); font: inherit; font-size: 16px; line-height: 1.45; resize: none; outline: none; }
+#src:focus { box-shadow: inset 0 0 0 2px var(--blue); }
+.tools { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.tools button { display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 11px; border: 0; border-radius: 10px; background: var(--field); color: var(--text); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.tools button[hidden] { display: none; }
+.tools svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#mic.on { background: var(--red); color: #fff; }
+.status { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: 12.5px; color: var(--sub); }
+.status.err { color: var(--red); white-space: normal; }
+#aiResult:empty { display: none; }
+.res { margin-top: 12px; padding: 14px 14px 12px; border-left: 3px solid var(--blue); border-radius: 0 12px 12px 0; background: var(--paper-press, #f8f1e6); }
+.res .big { font-size: 22px; font-weight: 700; line-height: 1.4; word-break: keep-all; }
+.res .read { margin-top: 4px; font-size: 13px; color: var(--sub); }
+.res .small { margin-top: 6px; font-size: 14px; color: var(--sub); }
+.res .acts { display: flex; gap: 8px; margin-top: 12px; }
+.res .acts button { flex: 1; height: 40px; border: 0; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.res .acts .primary { background: var(--blue); color: #fff; }
+.res .acts button[hidden] { display: none; }
+.res .sum { font-size: 14px; font-weight: 600; }
+.res ol { margin: 10px 0 0; padding: 0; list-style: none; }
+.res ol li { padding: 8px 0; border-top: 1px solid var(--line); }
+.res ol li .ja { font-size: 13px; color: var(--sub); }
+.res ol li .ko { margin-top: 2px; font-size: 15px; }
+.res.photo { border-left-color: var(--red); }
+.recent { margin-top: 12px; }
+.recent p { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; color: var(--sub); }
+.recent button { display: block; width: 100%; padding: 8px 0; border: 0; border-top: 1px solid var(--line); background: none; color: var(--text); font: inherit; font-size: 14px; text-align: left; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent button span { margin-left: 6px; color: var(--sub); }
+/* 일본어는 띄어쓰기가 없어서 단어 단위 줄바꿈(keep-all)이면 화면 밖으로 넘친다 */
+.res .big.ja,
+#card .ja { word-break: normal; line-break: strict; overflow-wrap: anywhere; }

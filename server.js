@@ -4,13 +4,14 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import identify from './api/identify.js';
+import translate from './api/translate.js';
 import rate from './api/rate.js';
 
 const here = (p) => fileURLToPath(new URL(p, import.meta.url));
 const PORT = Number(process.env.PORT) || 3000;
 // 기본은 로컬에서만 접속 가능. 같은 와이파이의 폰으로 테스트하려면 HOST=0.0.0.0
 const HOST = process.env.HOST || '127.0.0.1';
-const API = { '/api/identify': identify, '/api/rate': rate };
+const API = { '/api/identify': identify, '/api/translate': translate, '/api/rate': rate };
 
 // URL 앞부분 → 정적 파일 폴더 (위에서부터 먼저 맞는 것)
 // nginx(jp-trip.conf): / 는 /trip/ 으로, /liquor/ 는 앞부분을 떼고(→ 아래의 '/'), 나머지는 그대로 넘겨준다.
