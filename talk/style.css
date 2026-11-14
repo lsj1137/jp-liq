@@ -32,7 +32,7 @@
 #card .actions [data-speak][hidden] { display: none; }
 
 /* AI 번역 */
-.ai { margin: 12px 0 4px; padding: 14px 14px 12px; border-radius: 16px; background: #fff; }
+.ai { padding: 14px 14px 12px; border-radius: 16px; background: var(--paper, #fff); }
 .aihead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .dir { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
 .dir .arrow { width: 16px; height: 16px; fill: none; stroke: var(--sub); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -44,7 +44,7 @@
 .tools button[hidden] { display: none; }
 .tools svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 #mic.on { background: var(--red); color: #fff; }
-.status { flex: 1; min-width: 0; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; font-size: 12.5px; color: var(--sub); }
+.status { flex: 1; min-width: 0; margin: 0; text-align: right; font-size: 12.5px; line-height: 1.35; color: var(--sub); }
 .status.err { color: var(--red); white-space: normal; }
 #aiResult:empty { display: none; }
 .res { margin-top: 12px; padding: 14px 14px 12px; border-left: 3px solid var(--blue); border-radius: 0 12px 12px 0; background: var(--paper-press, #f8f1e6); }
@@ -68,3 +68,21 @@
 /* 일본어는 띄어쓰기가 없어서 단어 단위 줄바꿈(keep-all)이면 화면 밖으로 넘친다 */
 .res .big.ja,
 #card .ja { word-break: normal; line-break: strict; overflow-wrap: anywhere; }
+
+/* 제목 줄 오른쪽 'AI 번역' 버튼: 쇼핑 앱의 '면세·반입 팁'과 같은 모양 */
+#transBtn { display: flex; align-items: center; gap: 6px; flex: none; height: 34px; padding: 0 11px 0 7px; border: 1px solid #e6dccd; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+#transBtn .seal { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; background: var(--blue); color: #fffdf8; font-family: "Gowun Batang", serif; font-size: 12px; font-weight: 700; line-height: 1; transform: rotate(-6deg); }
+
+/* 번역 전체 화면 */
+#trans { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); color: var(--text); }
+#trans[open] { display: flex; flex-direction: column; }
+#trans .thead { display: flex; align-items: center; gap: 4px; max-width: 640px; width: 100%; margin: 0 auto; padding: calc(10px + env(safe-area-inset-top)) 12px 6px 6px; }
+#trans .thead h2 { margin: 0; font-family: "Gowun Batang", serif; font-size: 20px; }
+#trans .tback { display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; color: var(--text); cursor: pointer; }
+#trans .tback svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#trans .tbody { flex: 1; overflow-y: auto; width: 100%; max-width: 640px; margin: 0 auto; padding: 4px 12px calc(24px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+
+/* 녹음 중 */
+#mic.on { background: var(--red); color: #fff; }
+#mic.on svg { animation: rec 1s ease-in-out infinite; }
+@keyframes rec { 50% { opacity: 0.35; } }

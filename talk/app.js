@@ -144,6 +144,13 @@ async function call(body) {
   return d;
 }
 
+function showResult(d, from) {
+  ai.result = { ja: d.ja, read: d.read, ko: d.ko, from };
+  localStorage.setItem(RECENT_KEY, JSON.stringify([ai.result, ...loadRecent().filter((x) => x.ja !== d.ja)].slice(0, 20)));
+  status('');
+  renderResult();
+}
+
 async function translateText(force = false) {
   const text = $('#src').value.trim();
   if (!text || (text === ai.last && !force)) return;
@@ -153,10 +160,7 @@ async function translateText(force = false) {
   try {
     const d = await call({ text, from: ai.from });
     if (seq !== ai.seq) return; // 그새 더 입력했으면 이 결과는 버린다
-    ai.result = { ...d, from: ai.from };
-    localStorage.setItem(RECENT_KEY, JSON.stringify([ai.result, ...loadRecent().filter((x) => x.ja !== d.ja)].slice(0, 20)));
-    status('');
-    renderResult();
+    showResult(d, ai.from);
   } catch (e) {
     if (seq !== ai.seq) return;
     ai.last = '';
@@ -204,30 +208,121 @@ $('#aiResult').addEventListener('click', (e) => {
   else if (act === 'speak') r.from === 'ko' ? speakAs(r.ja, 'ja-JP') : speakAs(r.ko, 'ko-KR');
 });
 
-// 말하기: 기기가 음성 인식을 지원할 때만. 받아 적는 대로 입력칸에 보여 주고, 말이 끝나면 번역한다.
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null;
-if (Recognition) $('#mic').hidden = false;
-$('#mic').addEventListener('click', () => {
-  if (rec) return rec.stop();
-  rec = new Recognition();
-  rec.lang = ai.from === 'ko' ? 'ko-KR' : 'ja-JP';
-  rec.interimResults = true;
-  rec.onresult = (e) => {
-    $('#src').value = [...e.results].map((r) => r[0].transcript).join('');
-  };
-  rec.onerror = (e) => status(e.error === 'not-allowed' ? '마이크 권한을 허용해 주세요.' : '잘 듣지 못했어요. 다시 눌러 말해 주세요.', true);
-  rec.onend = () => {
-    rec = null;
-    $('#mic').classList.remove('on');
-    $('#mic span').textContent = '말하기';
-    if ($('#src').value.trim()) translateText(true);
-  };
-  rec.start();
-  $('#mic').classList.add('on');
-  $('#mic span').textContent = '듣는 중…';
-  status(ai.from === 'ko' ? '한국어로 말해 주세요' : '일본어로 말하게 해 주세요');
-});
+// 말하기: 녹음한 소리를 AI가 받아 적고 번역한다.
+// 브라우저 내장 음성 인식은 아이폰 홈 화면 앱 등에서 권한 창도 없이 실패해서 쓰지 않는다.
+// 누르면 녹음 시작(마이크 권한 창), 한 번 더 누르면 끝나고 번역. 최대 20초. 16kHz 모노 WAV로 보낸다.
+const MAX_REC = 20;
+const recState = { on: false, ctx: null, stream: null, src: null, node: null, chunks: [], rate: 48000, timer: null, sec: 0 };
+if (navigator.mediaDevices?.getUserMedia) $('#mic').hidden = false;
+
+function micUi(on) {
+  $('#mic').classList.toggle('on', on);
+  $('#mic span').textContent = on ? `끝내기 ${recState.sec}초` : '말하기';
+}
+
+function cleanupRec() {
+  clearInterval(recState.timer);
+  recState.node?.disconnect();
+  recState.src?.disconnect();
+  recState.stream?.getTracks().forEach((t) => t.stop());
+  recState.ctx?.close().catch(() => {});
+  Object.assign(recState, { on: false, ctx: null, stream: null, src: null, node: null, timer: null });
+  micUi(false);
+}
+
+async function startRec() {
+  // 아이폰은 소리 처리를 누르는 순간에 시작해야 해서, 권한을 묻기 전에 먼저 만든다
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  recState.ctx = new Ctx();
+  recState.on = true;
+  try {
+    recState.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  } catch (e) {
+    cleanupRec();
+    return status(
+      e.name === 'NotAllowedError'
+        ? '마이크 권한이 꺼져 있어요. 브라우저나 휴대폰 설정에서 이 사이트의 마이크를 허용해 주세요.'
+        : '마이크를 쓸 수 없어요. 키보드의 마이크 버튼으로 받아 적어도 돼요.',
+      true,
+    );
+  }
+  if (!recState.on) return cleanupRec(); // 권한 창이 떠 있는 동안 화면을 닫았으면
+  await recState.ctx.resume().catch(() => {});
+  recState.rate = recState.ctx.sampleRate;
+  recState.chunks = [];
+  recState.src = recState.ctx.createMediaStreamSource(recState.stream);
+  recState.node = recState.ctx.createScriptProcessor(4096, 1, 1);
+  recState.node.onaudioprocess = (e) => recState.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  recState.src.connect(recState.node);
+  recState.node.connect(recState.ctx.destination);
+  recState.sec = 0;
+  micUi(true);
+  status(ai.from === 'ko' ? '한국어로 말한 뒤 끝내기를 눌러 주세요' : '상대가 일본어로 말한 뒤 끝내기를 눌러 주세요');
+  recState.timer = setInterval(() => {
+    recState.sec++;
+    micUi(true);
+    if (recState.sec >= MAX_REC) stopRec(true);
+  }, 1000);
+}
+
+// 녹음 → 16kHz 모노 16비트 WAV (data URL)
+function toWav(chunks, rate) {
+  const len = chunks.reduce((n, c) => n + c.length, 0);
+  const all = new Float32Array(len);
+  let o = 0;
+  for (const c of chunks) all.set(c, o), (o += c.length);
+  const ratio = rate / 16000;
+  const n = Math.floor(len / ratio);
+  const pcm = new Int16Array(n);
+  let sq = 0;
+  for (let i = 0; i < n; i++) {
+    const start = Math.floor(i * ratio);
+    const end = Math.min(len, Math.floor((i + 1) * ratio));
+    let sum = 0;
+    for (let j = start; j < end; j++) sum += all[j];
+    const v = Math.max(-1, Math.min(1, sum / Math.max(1, end - start)));
+    sq += v * v;
+    pcm[i] = v < 0 ? v * 0x8000 : v * 0x7fff;
+  }
+  const buf = new ArrayBuffer(44 + pcm.byteLength);
+  const dv = new DataView(buf);
+  const str = (p, s) => [...s].forEach((ch, i) => dv.setUint8(p + i, ch.charCodeAt(0)));
+  str(0, 'RIFF'); dv.setUint32(4, 36 + pcm.byteLength, true); str(8, 'WAVE');
+  str(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+  dv.setUint32(24, 16000, true); dv.setUint32(28, 32000, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+  str(36, 'data'); dv.setUint32(40, pcm.byteLength, true);
+  new Int16Array(buf, 44).set(pcm);
+  let bin = '';
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return { url: 'data:audio/wav;base64,' + btoa(bin), seconds: n / 16000, rms: Math.sqrt(sq / Math.max(1, n)) };
+}
+
+async function stopRec(send) {
+  if (!recState.on) return;
+  const chunks = recState.chunks;
+  const rate = recState.rate;
+  cleanupRec();
+  if (!send) return status('');
+  const wav = toWav(chunks, rate);
+  if (wav.seconds < 0.6) return status('너무 짧아요. 말하기를 누르고 말한 뒤 끝내기를 눌러 주세요.', true);
+  if (wav.rms < 0.003) return status('말소리가 들리지 않았어요. 휴대폰을 입 가까이 대고 다시 해 주세요.', true);
+  const seq = ++ai.seq;
+  const from = ai.from;
+  status('알아듣는 중…');
+  try {
+    const d = await call({ audio: wav.url, from });
+    if (seq !== ai.seq) return;
+    if (d.empty) return status('잘 알아듣지 못했어요. 조금 더 또렷하게 다시 말해 주세요.', true);
+    $('#src').value = from === 'ko' ? d.ko : d.ja;
+    ai.last = $('#src').value.trim();
+    showResult(d, from);
+  } catch (e) {
+    if (seq === ai.seq) status(e.message, true);
+  }
+}
+
+$('#mic').addEventListener('click', () => (recState.on ? stopRec(true) : startRec()));
 
 // 사진: 긴 변 1600px JPEG로 줄여서 보낸다
 async function toDataUrl(file) {
@@ -256,6 +351,25 @@ $('#photo').addEventListener('change', async (e) => {
     if (seq === ai.seq) status(err.message, true);
   }
 });
+function openTrans() {
+  $('#trans').showModal();
+  history.pushState({ trans: 1 }, '');
+  renderResult();
+}
+function closeTrans() {
+  stopRec(false);
+  if ($('#trans').open) $('#trans').close();
+}
+$('#transBtn').addEventListener('click', openTrans);
+// 닫기 버튼·Esc는 기록을 되돌려서(popstate) 닫는다 → 휴대폰 뒤로가기와 같은 길
+$('#trans').addEventListener('click', (e) => e.target.closest('[data-tclose]') && history.back());
+$('#trans').addEventListener('cancel', (e) => {
+  e.preventDefault();
+  history.back();
+});
+addEventListener('popstate', () => $('#trans').open && closeTrans());
+document.addEventListener('visibilitychange', () => document.hidden && stopRec(false));
+
 renderDir();
 renderResult();
 

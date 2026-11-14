@@ -25,6 +25,7 @@
     <header>
       <div class="titlebar">
         <h1><a class="back" href="/" aria-label="메인으로" onclick="var r=document.referrer;if(history.length>1&&r.indexOf(location.origin+'/')===0&&/^\/(trip\/)?([?#]|$)/.test(r.slice(location.origin.length))){history.back();return false}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></a>보여주는 일본어</h1>
+        <button type="button" id="transBtn"><span class="seal" aria-hidden="true">訳</span>AI 번역</button>
       </div>
       <form class="search" onsubmit="return false">
         <svg class="glass" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>
@@ -34,25 +35,33 @@
     </header>
 
     <main>
-      <!-- AI 번역: 글·말·사진. 결과는 회화 카드처럼 크게 보여 줄 수 있다 -->
-      <section class="ai" aria-label="AI 번역">
-        <div class="aihead">
-          <p class="dir" id="dir"><span id="dirFrom">한국어</span><svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3" /></svg><span id="dirTo">일본어</span></p>
-          <button type="button" class="swap" id="swap">방향 바꾸기</button>
-        </div>
-        <textarea id="src" rows="2" maxlength="300" placeholder="하고 싶은 말을 한국어로 적어 보세요" enterkeyhint="done"></textarea>
-        <div class="tools">
-          <button type="button" id="mic" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg><span>말하기</span></button>
-          <button type="button" id="photoBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" /><circle cx="12" cy="13.3" r="3.3" /></svg><span>사진 번역</span></button>
-          <p class="status" id="aiStatus" role="status"></p>
-        </div>
-        <div id="aiResult"></div>
-      </section>
-      <input type="file" id="photo" accept="image/*" capture="environment" hidden />
-
       <div class="caption"><p id="count"></p></div>
       <ul id="list"></ul>
     </main>
+
+    <!-- AI 번역: 글·말·사진. 결과는 회화 카드처럼 크게 보여 줄 수 있다. 뒤로가기로 닫힌다 -->
+    <dialog id="trans" aria-label="AI 번역">
+      <div class="thead">
+        <button type="button" class="tback" data-tclose aria-label="닫기"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg></button>
+        <h2>AI 번역</h2>
+      </div>
+      <div class="tbody">
+        <section class="ai">
+          <div class="aihead">
+            <p class="dir" id="dir"><span id="dirFrom">한국어</span><svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3" /></svg><span id="dirTo">일본어</span></p>
+            <button type="button" class="swap" id="swap">방향 바꾸기</button>
+          </div>
+          <textarea id="src" rows="2" maxlength="300" placeholder="하고 싶은 말을 한국어로 적어 보세요" enterkeyhint="done"></textarea>
+          <div class="tools">
+            <button type="button" id="mic" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" /></svg><span>말하기</span></button>
+            <button type="button" id="photoBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.2h6.8L17 8h3v11H4z" /><circle cx="12" cy="13.3" r="3.3" /></svg><span>사진 번역</span></button>
+            <p class="status" id="aiStatus" role="status"></p>
+          </div>
+          <div id="aiResult"></div>
+        </section>
+        <input type="file" id="photo" accept="image/*" capture="environment" hidden />
+      </div>
+    </dialog>
 
     <dialog id="card">
       <div class="show">

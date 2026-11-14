@@ -125,6 +125,39 @@ test('AI가 빈 답(후보 없음)을 주면 502', async () => {
   assert.match(r.json.error, /사진을 읽지 못했어요/);
 });
 
+// ── 번역: 말(녹음) ──
+const WAV = 'data:audio/wav;base64,' + Buffer.from('RIFF....WAVEfmt ').toString('base64');
+test('말 번역: 녹음을 보내면 ja·read·ko, AI에는 audio/wav로 보낸다', async () => {
+  let sent;
+  fake = async (url, init) => {
+    sent = JSON.parse(init.body);
+    return gemini('{"ja":"トイレはどこですか","read":"토이레와 도코데스카","ko":"화장실 어디예요"}');
+  };
+  const r = await call(translate, { audio: WAV, from: 'ko' });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.ja, 'トイレはどこですか');
+  assert.equal(sent.contents[0].parts[0].inline_data.mime_type, 'audio/wav');
+});
+
+test('말 번역: 말소리가 없으면 empty', async () => {
+  fake = async () => gemini('{"empty": true}');
+  const r = await call(translate, { audio: WAV, from: 'ja' });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.empty, true);
+});
+
+test('말 번역: wav가 아닌 녹음은 400, AI를 부르지 않음', async () => {
+  fake = async () => assert.fail('AI를 부르면 안 됨');
+  assert.equal((await call(translate, { audio: 'data:audio/webm;base64,aGk=' })).status, 400);
+});
+
+test('말 번역: 알아듣지 못한 답이면 502 안내', async () => {
+  fake = async () => gemini('음...');
+  const r = await call(translate, { audio: WAV, from: 'ko' });
+  assert.equal(r.status, 502);
+  assert.match(r.json.error, /알아듣지 못했어요/);
+});
+
 // ── 번역: 잘못된 요청 ──
 test('잘못된 요청은 AI를 부르지 않고 400', async () => {
   fake = async () => assert.fail('AI를 부르면 안 됨');

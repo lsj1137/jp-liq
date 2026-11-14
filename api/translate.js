@@ -1,10 +1,27 @@
 // 보여주는 일본어(talk/)의 AI 번역.
 // 글: { text, from: 'ko' | 'ja' } → { ja, read, ko }  (일본어 문장, 그 한글 발음, 한국어 문장 — 회화 카드와 같은 형식)
 // 사진: { image: dataURL } → { summary, lines: [{ ja, ko }] }  (메뉴판·안내문·라벨 등)
+// 말: { audio: 'data:audio/wav;base64,...', from } → { ja, read, ko } 또는 { empty: true } (말소리가 없을 때)
+//   브라우저 내장 음성 인식은 아이폰 홈 화면 앱 등에서 안 돼서, 녹음한 소리를 AI가 받아 적고 번역한다(Gemini만).
 import { send, readJson } from '../lib/http.js';
 import { ProviderError, pickProvider, parseJson, createLimiter, clientIp, parseImage } from '../lib/ai.js';
 
 const MAX_TEXT = 300;
+const parseAudio = (s) => {
+  const m = /^data:(audio\/wav);base64,(.+)$/.exec(s ?? '');
+  return m ? { mime: m[1], data: m[2] } : null;
+};
+
+const AUDIO_PROMPT = (from) => `당신은 일본을 여행하는 한국인을 돕는 통역사입니다.
+녹음은 ${from === 'ja' ? '일본 사람(점원·직원 등)이 일본어로 한 말' : '한국인 여행자가 한국어로 한 말'}입니다. 먼저 정확히 받아 적고 번역하세요.
+${
+  from === 'ja'
+    ? 'ja에는 받아 적은 일본어, ko에는 자연스러운 한국어 번역을 넣으세요.'
+    : 'ko에는 받아 적은 한국어(맞춤법만 다듬기), ja에는 점원·직원에게 보여 줄 정중하고 자연스러운 일본어(です・ます체)를 넣으세요.'
+}
+read에는 ja 문장을 한국인이 그대로 소리 내 읽을 수 있게 한글로 적으세요. 장음은 '-'로 표시하세요.
+말소리가 없거나 알아들을 수 없으면 {"empty": true} 만 출력하세요.
+JSON 한 줄만 출력하세요: {"ja": "...", "read": "...", "ko": "..."}`;
 
 const TEXT_PROMPT = (text, from) => `당신은 일본을 여행하는 한국인을 돕는 통역사입니다.
 ${
@@ -49,12 +66,16 @@ export default async function handler(req, res) {
   try {
     body = await readJson(req);
   } catch (e) {
-    return e.message === 'too large' ? send(res, 413, { error: '사진이 너무 커요.' }) : send(res, 400, { error: '요청 형식이 잘못됐어요.' });
+    return e.message === 'too large' ? send(res, 413, { error: body?.audio ? '녹음이 너무 길어요.' : '사진이 너무 커요.' }) : send(res, 400, { error: '요청 형식이 잘못됐어요.' });
   }
   const image = body?.image ? parseImage(body.image) : null;
+  const audio = body?.audio ? parseAudio(body.audio) : null;
   const text = str(body?.text).slice(0, MAX_TEXT);
+  const from = body?.from === 'ja' ? 'ja' : 'ko';
   if (body?.image && !image) return send(res, 400, { error: '이미지 형식이 올바르지 않아요.' });
-  if (!image && !text) return send(res, 400, { error: '번역할 내용이 없어요.' });
+  if (body?.audio && !audio) return send(res, 400, { error: '녹음 형식이 올바르지 않아요.' });
+  if (!image && !audio && !text) return send(res, 400, { error: '번역할 내용이 없어요.' });
+  if (audio && provider.key !== 'GEMINI_API_KEY') return send(res, 503, { error: '말로 번역하기는 지금 쓸 수 없어요. 글로 적어 주세요.' });
 
   const limited = overLimit(clientIp(req));
   if (limited) return send(res, 429, { error: limited });
@@ -63,13 +84,16 @@ export default async function handler(req, res) {
   try {
     const raw = image
       ? await provider.call(provider.apiKey, { prompt: IMAGE_PROMPT, image, maxTokens: 2500 })
-      : await provider.call(provider.apiKey, { prompt: TEXT_PROMPT(text, body.from === 'ja' ? 'ja' : 'ko'), maxTokens: 400, hedgeDelay: 4000 });
+      : audio
+        ? await provider.call(provider.apiKey, { prompt: AUDIO_PROMPT(from), image: audio, maxTokens: 500 })
+        : await provider.call(provider.apiKey, { prompt: TEXT_PROMPT(text, from), maxTokens: 400, hedgeDelay: 4000 });
     out = parseJson(raw);
   } catch (e) {
     console.error('translate:', e.message);
     return send(res, 502, { error: e instanceof ProviderError ? e.friendly('번역 서버') : '번역 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.' });
   }
-  if (!out) return send(res, 502, { error: image ? '사진을 읽지 못했어요. 글자가 잘 보이게 다시 찍어 주세요.' : '번역하지 못했어요. 다시 해 주세요.' });
+  if (!out) return send(res, 502, { error: image ? '사진을 읽지 못했어요. 글자가 잘 보이게 다시 찍어 주세요.' : audio ? '잘 알아듣지 못했어요. 조금 더 가까이에서 다시 말해 주세요.' : '번역하지 못했어요. 다시 해 주세요.' });
+  if (audio && out.empty) return send(res, 200, { empty: true });
 
   if (image) {
     const lines = (Array.isArray(out.lines) ? out.lines : [])
