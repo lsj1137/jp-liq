@@ -43,7 +43,8 @@ export default async function handler(req, res) {
   try {
     text = await provider.call(provider.apiKey, { prompt: PROMPT, image, maxTokens: 200 });
   } catch (e) {
-    return send(res, 502, { error: e instanceof ProviderError ? e.message.replace('AI 서버', '인식 서버') : '인식 서버에 연결하지 못했어요.' });
+    console.error('identify:', e.message);
+    return send(res, 502, { error: e instanceof ProviderError ? e.friendly('인식 서버') : '인식 서버에 연결하지 못했어요. 이름으로 검색해 주세요.' });
   }
 
   const out = parseJson(text);

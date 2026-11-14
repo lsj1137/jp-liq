@@ -66,7 +66,8 @@ export default async function handler(req, res) {
       : await provider.call(provider.apiKey, { prompt: TEXT_PROMPT(text, body.from === 'ja' ? 'ja' : 'ko'), maxTokens: 400, hedgeDelay: 4000 });
     out = parseJson(raw);
   } catch (e) {
-    return send(res, 502, { error: e instanceof ProviderError ? e.message.replace('AI 서버', '번역 서버') : '번역 서버에 연결하지 못했어요.' });
+    console.error('translate:', e.message);
+    return send(res, 502, { error: e instanceof ProviderError ? e.friendly('번역 서버') : '번역 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.' });
   }
   if (!out) return send(res, 502, { error: image ? '사진을 읽지 못했어요. 글자가 잘 보이게 다시 찍어 주세요.' : '번역하지 못했어요. 다시 해 주세요.' });
 

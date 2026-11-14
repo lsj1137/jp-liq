@@ -5,7 +5,8 @@
   "type": "module",
   "description": "일본여행 가이드북: 쇼핑 필수템 + 술 가격 비교",
   "scripts": {
-    "start": "node --env-file-if-exists=.env server.js"
+    "start": "node --env-file-if-exists=.env server.js",
+    "test": "node --test tests/*.test.mjs"
   },
   "engines": {
     "node": ">=22"

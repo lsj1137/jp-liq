@@ -52,6 +52,7 @@ GitHub Actions(`.github/workflows/kansai.yml`)가 매주 월요일 KST 05:17에 
 ```bash
 cp .env.example .env   # GEMINI_API_KEY 입력 (없으면 사진 검색만 꺼짐)
 npm start              # http://localhost:3000  → / 는 술 앱, /shop/ 쇼핑, /trip/ 메인
+npm test               # API 오류 처리 테스트 (AI 오류·무응답·한도·환율 장애, 실제 서버는 안 부름)
 ```
 
 의존성 없음 (Node 22+). 프런트엔드 경로는 모두 상대 경로라서 도메인 루트에서도 `/liquor/` 아래에서도 동작한다.

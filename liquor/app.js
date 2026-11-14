@@ -224,11 +224,19 @@ async function identify(source) {
   cam.classList.add('busy');
   setStatus('라벨 읽는 중…');
   try {
-    const r = await fetch('api/identify', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ image: await toDataUrl(source) }),
-    });
+    const image = await toDataUrl(source);
+    let r;
+    try {
+      // 서버는 AI 재시도까지 30초 안에 답한다. 그보다 오래 걸리면 연결 문제로 보고 끊는다.
+      r = await fetch('api/identify', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ image }),
+        signal: AbortSignal.timeout(40000),
+      });
+    } catch (e) {
+      throw new Error(e.name === 'TimeoutError' ? '응답이 너무 늦어요. 잠시 뒤 다시 찍거나 이름으로 검색해 주세요.' : '서버에 연결하지 못했어요. 이름으로 검색해 주세요.');
+    }
     const d = await r.json().catch(() => ({ error: '서버가 잠시 응답하지 않아요. 잠시 뒤 다시 해 주세요.' }));
     if (!r.ok || d.error) throw new Error(d.error);
     const w = state.list.find((x) => x.id === d.id);
