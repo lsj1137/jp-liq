@@ -210,9 +210,18 @@ $('#aiResult').addEventListener('click', (e) => {
 
 // 말하기: 녹음한 소리를 AI가 받아 적고 번역한다.
 // 브라우저 내장 음성 인식은 아이폰 홈 화면 앱 등에서 권한 창도 없이 실패해서 쓰지 않는다.
-// 누르면 녹음 시작(마이크 권한 창), 한 번 더 누르면 끝나고 번역. 최대 20초. 16kHz 모노 WAV로 보낸다.
+// 누르면 녹음 시작(마이크 권한 창). 말을 마치고 잠깐 조용하면 자동으로 끝내고 번역한다(버튼으로 직접 끝내도 됨). 최대 20초.
+// 보내기 전에 앞뒤 침묵을 잘라내고 16kHz 모노 WAV로 보낸다.
 const MAX_REC = 20;
-const recState = { on: false, ctx: null, stream: null, src: null, node: null, chunks: [], rate: 48000, timer: null, sec: 0 };
+const END_SILENCE = 1.2; // 말이 끝난 뒤 이만큼(초) 조용하면 끝
+const recState = { on: false, ctx: null, stream: null, src: null, node: null, chunks: [], rate: 48000, timer: null, sec: 0, noise: 0, noiseN: 0, spoke: false, quiet: 0 };
+const rmsOf = (a) => {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += a[i] * a[i];
+  return Math.sqrt(s / a.length);
+};
+// 말소리로 볼 크기: 처음 0.3초로 잰 주변 소음의 3배 이상 (조용한 곳에서도 최소값은 둔다)
+const speechLevel = () => Math.max(0.012, recState.noise * 3);
 if (navigator.mediaDevices?.getUserMedia) $('#mic').hidden = false;
 
 function micUi(on) {
@@ -252,12 +261,28 @@ async function startRec() {
   recState.chunks = [];
   recState.src = recState.ctx.createMediaStreamSource(recState.stream);
   recState.node = recState.ctx.createScriptProcessor(4096, 1, 1);
-  recState.node.onaudioprocess = (e) => recState.chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  Object.assign(recState, { noise: 0, noiseN: 0, spoke: false, quiet: 0 });
+  recState.node.onaudioprocess = (e) => {
+    const chunk = new Float32Array(e.inputBuffer.getChannelData(0));
+    recState.chunks.push(chunk);
+    const level = rmsOf(chunk);
+    const dur = chunk.length / recState.rate;
+    if (recState.noiseN * dur < 0.3) {
+      recState.noise = (recState.noise * recState.noiseN + level) / ++recState.noiseN;
+      return;
+    }
+    if (level > speechLevel()) {
+      recState.spoke = true;
+      recState.quiet = 0;
+    } else if (recState.spoke && (recState.quiet += dur) >= END_SILENCE) {
+      stopRec(true); // 말이 끝났다
+    }
+  };
   recState.src.connect(recState.node);
   recState.node.connect(recState.ctx.destination);
   recState.sec = 0;
   micUi(true);
-  status(ai.from === 'ko' ? '한국어로 말한 뒤 끝내기를 눌러 주세요' : '상대가 일본어로 말한 뒤 끝내기를 눌러 주세요');
+  status(ai.from === 'ko' ? '한국어로 말해 주세요. 말이 끝나면 바로 번역해요' : '상대가 일본어로 말하게 해 주세요. 말이 끝나면 바로 번역해요');
   recState.timer = setInterval(() => {
     recState.sec++;
     micUi(true);
@@ -266,7 +291,17 @@ async function startRec() {
 }
 
 // 녹음 → 16kHz 모노 16비트 WAV (data URL)
-function toWav(chunks, rate) {
+function toWav(chunks, rate, level = 0) {
+  // 앞뒤 침묵은 잘라낸다(앞뒤로 0.25초씩은 남김) → 보내는 양과 AI가 들을 양이 줄어든다
+  if (level > 0) {
+    const loud = chunks.map((c) => rmsOf(c) > level);
+    const first = loud.indexOf(true);
+    const last = loud.lastIndexOf(true);
+    if (first >= 0) {
+      const pad = Math.ceil((0.25 * rate) / (chunks[0]?.length || 4096));
+      chunks = chunks.slice(Math.max(0, first - pad), last + 1 + pad);
+    }
+  }
   const len = chunks.reduce((n, c) => n + c.length, 0);
   const all = new Float32Array(len);
   let o = 0;
@@ -302,9 +337,10 @@ async function stopRec(send) {
   if (!recState.on) return;
   const chunks = recState.chunks;
   const rate = recState.rate;
+  const level = recState.noiseN ? speechLevel() : 0;
   cleanupRec();
   if (!send) return status('');
-  const wav = toWav(chunks, rate);
+  const wav = toWav(chunks, rate, level);
   if (wav.seconds < 0.6) return status('너무 짧아요. 말하기를 누르고 말한 뒤 끝내기를 눌러 주세요.', true);
   if (wav.rms < 0.003) return status('말소리가 들리지 않았어요. 휴대폰을 입 가까이 대고 다시 해 주세요.', true);
   const seq = ++ai.seq;

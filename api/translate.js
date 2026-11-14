@@ -85,7 +85,7 @@ export default async function handler(req, res) {
     image
       ? provider.call(provider.apiKey, { prompt: IMAGE_PROMPT, image, maxTokens: 2500 })
       : audio
-        ? provider.call(provider.apiKey, { prompt: AUDIO_PROMPT(from), image: audio, maxTokens: 800 })
+        ? provider.call(provider.apiKey, { prompt: AUDIO_PROMPT(from), image: audio, maxTokens: 800, hedgeDelay: 3500 })
         : provider.call(provider.apiKey, { prompt: TEXT_PROMPT(text, from), maxTokens: 400, hedgeDelay: 4000 });
   const usable = (o) => o && (image || (audio && o.empty) || (str(o.ja) && str(o.ko)));
   let out;
