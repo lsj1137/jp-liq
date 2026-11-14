@@ -31,7 +31,8 @@ body {
 ::selection { background: #f6d2db; }
 
 /* 상단: 바탕과 같은 화지 */
-header { background: var(--washi); }
+/* 위에 붙는 헤더는 목록(접힌 모서리 z-index 1)보다 위에 그린다 */
+header { z-index: 5; background: var(--washi); }
 #cats { border-bottom-color: #e6dccd; }
 h1,
 dialog h2 { font-family: "Gowun Batang", serif; letter-spacing: -0.02em; }

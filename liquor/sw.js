@@ -2,7 +2,7 @@
 // 사진 인식(/api/identify, POST)만 인터넷이 필요하다.
 // 병 사진을 같은 파일 이름으로 바꿨다면 CACHE 버전을 올려야 새 사진이 보인다.
 // 경로는 모두 sw.js 위치 기준 상대 경로 (/liquor/ 아래에 있어도 동작)
-const CACHE = 'jp-liq-v12';
+const CACHE = 'jp-liq-v13';
 // 병 사진은 버전과 따로 둔다: 앱을 업데이트해도 3MB를 다시 받지 않는다
 const IMG_CACHE = 'jp-liq-img';
 const BASE = new URL('./', location).pathname;

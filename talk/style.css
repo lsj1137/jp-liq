@@ -69,9 +69,11 @@
 .res .big.ja,
 #card .ja { word-break: normal; line-break: strict; overflow-wrap: anywhere; }
 
-/* 제목 줄 오른쪽 'AI 번역' 버튼: 쇼핑 앱의 '면세·반입 팁'과 같은 모양 */
-#transBtn { display: flex; align-items: center; gap: 6px; flex: none; height: 34px; padding: 0 11px 0 7px; border: 1px solid #e6dccd; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-#transBtn .seal { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; background: var(--blue); color: #fffdf8; font-family: "Gowun Batang", serif; font-size: 12px; font-weight: 700; line-height: 1; transform: rotate(-6deg); }
+/* 제목 줄 오른쪽 '번역' 버튼: 가·あ 글자 아이콘 + 글자, 종이색 사각 */
+#transBtn { display: flex; align-items: center; gap: 5px; flex: none; height: 34px; padding: 0 11px 0 8px; border: 1px solid #e6dccd; border-radius: 10px; background: var(--paper, #fff); color: var(--text); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+#transBtn svg { width: 20px; height: 20px; }
+#transBtn svg text { fill: currentColor; font-family: "Gowun Batang", serif; font-size: 12px; font-weight: 700; }
+#transBtn svg text.ja { fill: var(--red); }
 
 /* 번역 전체 화면 */
 #trans { width: 100vw; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: var(--bg); color: var(--text); }
