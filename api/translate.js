@@ -80,19 +80,28 @@ export default async function handler(req, res) {
   const limited = overLimit(clientIp(req));
   if (limited) return send(res, 429, { error: limited });
 
+  // AI가 가끔(실측 5번에 1번꼴) 해석할 수 없는 답을 줘서, 그럴 땐 한 번 더 묻는다
+  const ask = () =>
+    image
+      ? provider.call(provider.apiKey, { prompt: IMAGE_PROMPT, image, maxTokens: 2500 })
+      : audio
+        ? provider.call(provider.apiKey, { prompt: AUDIO_PROMPT(from), image: audio, maxTokens: 800 })
+        : provider.call(provider.apiKey, { prompt: TEXT_PROMPT(text, from), maxTokens: 400, hedgeDelay: 4000 });
+  const usable = (o) => o && (image || (audio && o.empty) || (str(o.ja) && str(o.ko)));
   let out;
   try {
-    const raw = image
-      ? await provider.call(provider.apiKey, { prompt: IMAGE_PROMPT, image, maxTokens: 2500 })
-      : audio
-        ? await provider.call(provider.apiKey, { prompt: AUDIO_PROMPT(from), image: audio, maxTokens: 500 })
-        : await provider.call(provider.apiKey, { prompt: TEXT_PROMPT(text, from), maxTokens: 400, hedgeDelay: 4000 });
-    out = parseJson(raw);
+    for (let i = 0; i < 2 && !usable(out); i++) {
+      const raw = await ask();
+      out = parseJson(raw);
+      if (!usable(out)) console.error('translate: 해석 못 한 답', JSON.stringify(raw).slice(0, 300));
+    }
   } catch (e) {
     console.error('translate:', e.message);
+    // 녹음이 비어 있거나 소리로 인식이 안 되면 Gemini가 400으로 거절한다
+    if (audio && e.status === 400) return send(res, 502, { error: '잘 알아듣지 못했어요. 조금 더 가까이에서 다시 말해 주세요.' });
     return send(res, 502, { error: e instanceof ProviderError ? e.friendly('번역 서버') : '번역 서버에 연결하지 못했어요. 잠시 뒤 다시 해 주세요.' });
   }
-  if (!out) return send(res, 502, { error: image ? '사진을 읽지 못했어요. 글자가 잘 보이게 다시 찍어 주세요.' : audio ? '잘 알아듣지 못했어요. 조금 더 가까이에서 다시 말해 주세요.' : '번역하지 못했어요. 다시 해 주세요.' });
+  if (!usable(out)) return send(res, 502, { error: image ? '사진을 읽지 못했어요. 글자가 잘 보이게 다시 찍어 주세요.' : audio ? '잘 알아듣지 못했어요. 조금 더 가까이에서 다시 말해 주세요.' : '번역하지 못했어요. 다시 해 주세요.' });
   if (audio && out.empty) return send(res, 200, { empty: true });
 
   if (image) {

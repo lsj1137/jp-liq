@@ -151,9 +151,25 @@ test('말 번역: wav가 아닌 녹음은 400, AI를 부르지 않음', async ()
   assert.equal((await call(translate, { audio: 'data:audio/webm;base64,aGk=' })).status, 400);
 });
 
-test('말 번역: 알아듣지 못한 답이면 502 안내', async () => {
+test('말 번역: 두 번 다 알아듣지 못한 답이면 502 안내', async () => {
   fake = async () => gemini('음...');
   const r = await call(translate, { audio: WAV, from: 'ko' });
+  assert.equal(r.status, 502);
+  assert.equal(calls, 2);
+  assert.match(r.json.error, /알아듣지 못했어요/);
+});
+
+test('이상한 답이 한 번 오면 다시 물어서 성공한다', async () => {
+  let n = 0;
+  fake = async () => (++n === 1 ? gemini('') : gemini('{"ja":"はい","read":"하이","ko":"네"}'));
+  const r = await call(translate, { audio: WAV, from: 'ko' });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.ja, 'はい');
+});
+
+test('말 번역: 무음 녹음을 AI가 400으로 거절하면 "알아듣지 못했어요"', async () => {
+  fake = async () => new Response('bad audio', { status: 400 });
+  const r = await call(translate, { audio: WAV, from: 'ja' });
   assert.equal(r.status, 502);
   assert.match(r.json.error, /알아듣지 못했어요/);
 });
