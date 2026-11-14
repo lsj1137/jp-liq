@@ -90,13 +90,14 @@ const status = (msg, err = false) => {
   $('#aiStatus').classList.toggle('err', err);
 };
 
-// 한국어→일본어: 내가 아래에서 적거나 말하면 위쪽(상대)에 일본어가 크게.
-// 일본어→한국어: 상대가 말하면 아래쪽(나)에 한국어가 크게. 이때는 입력칸을 숨긴다.
+// 방향과 상관없이 아래쪽(나)은 같은 모양: 한국어 칸 + 읽는 법. 위쪽(상대)은 일본어.
+// 한국어→일본어: 한국어 칸에 내가 적거나 말한다. 일본어→한국어: 상대 말의 번역이 한국어 칸에 들어간다(읽기 전용).
 function renderDir() {
   const ko = ai.from === 'ko';
   $('#dirFrom').textContent = ko ? '한국어' : '일본어';
   $('#dirTo').textContent = ko ? '일본어' : '한국어';
-  $('#src').hidden = !ko;
+  $('#src').readOnly = !ko;
+  $('#src').placeholder = ko ? '하고 싶은 말을 한국어로 적거나 말하기를 누르세요' : '상대 말 듣기를 누르면 상대가 한 말이 여기에 한국어로 나와요';
   renderThem();
 }
 
@@ -131,10 +132,8 @@ function renderResult() {
       <p class="sum">${esc(r.summary || '사진 속 글자')}</p>
       ${r.lines.length ? `<ol>${r.lines.map((l) => `<li><p class="ja" lang="ja">${esc(l.ja)}</p><p class="ko">${esc(l.ko)}</p></li>`).join('')}</ol>` : ''}
     </div>`;
-  } else if (r && r.from === 'ja') {
-    main = `<div class="res"><p class="big">${esc(r.ko)}</p><p class="small ja" lang="ja">${esc(r.ja)}</p></div>`;
   } else if (r) {
-    main = `<div class="res"><p class="read"><b>읽는 법</b>${esc(r.read)}</p>${$('#src').value.trim() === r.ko ? '' : `<p class="small">${esc(r.ko)}</p>`}</div>`;
+    main = `<div class="res"><p class="read"><b>읽는 법</b>${esc(r.read)}</p></div>`;
   }
   $('#aiResult').innerHTML = main;
 }
@@ -157,7 +156,7 @@ $('#recentList').addEventListener('click', (e) => {
   const x = b && loadRecent()[Number(b.dataset.recent)];
   if (!x) return;
   ai.result = x;
-  if (ai.from === 'ko') $('#src').value = x.ko;
+  $('#src').value = x.ko;
   ai.last = $('#src').value.trim();
   renderResult();
   sheet(false);
@@ -199,6 +198,8 @@ async function call(body) {
 
 function showResult(d, from) {
   ai.result = { ja: d.ja, read: d.read, ko: d.ko, from };
+  // 한→일은 내가 쓴 문장 그대로 두고(입력 중 커서가 튀지 않게), 일→한은 번역을 넣는다
+  if (from === 'ja') $('#src').value = d.ko;
   localStorage.setItem(RECENT_KEY, JSON.stringify([ai.result, ...loadRecent().filter((x) => x.ja !== d.ja)].slice(0, 20)));
   status('');
   renderResult();
@@ -241,7 +242,7 @@ $('#swap').addEventListener('click', () => {
   renderDir();
   micUi(false);
   // 방금 번역한 결과가 있으면 그 결과를 입력으로 바꿔 넣는다 (상대 답을 받아 적을 때 편하게)
-  $('#src').value = ai.from === 'ko' && ai.result && !ai.result.lines ? ai.result.ko : '';
+  $('#src').value = ai.result && !ai.result.lines ? ai.result.ko : '';
   ai.last = $('#src').value.trim();
   status('');
   renderResult();
@@ -391,7 +392,7 @@ async function stopRec(send) {
     const d = await call({ audio: wav.url, from });
     if (seq !== ai.seq) return;
     if (d.empty) return status('잘 알아듣지 못했어요. 조금 더 또렷하게 다시 말해 주세요.', true);
-    $('#src').value = from === 'ko' ? d.ko : d.ja;
+    $('#src').value = d.ko;
     ai.last = $('#src').value.trim();
     showResult(d, from);
   } catch (e) {
